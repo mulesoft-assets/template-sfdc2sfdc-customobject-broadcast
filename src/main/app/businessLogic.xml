@@ -10,18 +10,18 @@ xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
 
-     <flow name="upsertCotactFromAToB" doc:name="upsertCotactFromAToB">
-        <sfdc:subscribe-topic config-ref="SalesforceA" topic="${sfdc.a.topic}" doc:name="Contact create/update "/>
-        <logger message="Contact created/updated in Org A #[payload]" level="INFO" doc:name="Details of contact received"/>
-        <expression-filter expression="#[(payload.get('Email') != null) &amp;&amp; ( (payload.get('MailingCountry').equals('United States')) || (payload.get('MailingCountry').equals('US')) || (payload.get('MailingCountry').equals('U.S.')))]" doc:name="Filter if Cotact has no Email"/>
+     <flow name="upsertCustomObjectFromAToB" doc:name="upsertCustomObjectFromAToB">
+        <sfdc:subscribe-topic config-ref="SalesforceA" topic="${sfdc.a.topic}" doc:name="Custom object create/update "/>
+        <logger message="Custom object created/updated in Org A #[payload]" level="INFO" doc:name="Details of custom object received"/>
+        <expression-filter expression="#[(payload.get('Name') != null) &amp;&amp;  (payload.get('interpreter__c').equals('The Beatles')) ]" doc:name="Filter if Custom object has no Name"/>
         <enricher source="#[payload]" target="#[flowVars['idInB']]" doc:name="Store in variable idInB">
-        	<sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM Contact WHERE Email = '#[payload['Email']]'" doc:name="Check contact in org B"/>
+        	<sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM MusicAlbum__c WHERE Name = '#[payload['Name']]'" doc:name="Check custom object in org B"/>
         </enricher>
         <expression-component doc:name="Setting ID for Upsert"><![CDATA[if (flowVars['idInB'] instanceof NullPayload) {payload.remove('Id')} else {payload.put('Id',flowVars['idInB'].get('Id'))}]]></expression-component>
-        <set-variable variableName="outputContactList" value="#[new java.util.ArrayList()]" doc:name="Create variable outputContactList"/>
-        <expression-component doc:name="Add Contact to outputContactList"><![CDATA[outputContactList.add(payload)]]></expression-component>
-        <sfdc:upsert config-ref="SalesforceB"  doc:name="Upsert Contact on variable outputContactList" externalIdFieldName="Id" type="Contact">
-        	<sfdc:objects ref="#[outputContactList]"/>
+        <set-variable variableName="outputCustomObjectList" value="#[new java.util.ArrayList()]" doc:name="Create variable outputCustomObjectList"/>
+        <expression-component doc:name="Add Custom object to outputCustomObjectList"><![CDATA[outputCustomObjectList.add(payload)]]></expression-component>
+        <sfdc:upsert config-ref="SalesforceB"  doc:name="Upsert Custom Object on variable outputCustomObjectList" externalIdFieldName="Id" type="MusicAlbum__c">
+        	<sfdc:objects ref="#[outputCustomObjectList]"/>
         </sfdc:upsert>
         <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
     </flow>
