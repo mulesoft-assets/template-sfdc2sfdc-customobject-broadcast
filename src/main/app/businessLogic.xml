@@ -1,28 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" 
-xmlns="http://www.mulesoft.org/schema/mule/core" 
-xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
-xmlns:spring="http://www.springframework.org/schema/beans" 
-version="EE-3.5.0" 
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+<mule xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
 
-     <flow name="upsertCustomObjectFromAToB" doc:name="upsertCustomObjectFromAToB">
-        <sfdc:subscribe-topic config-ref="SalesforceA" topic="${sfdc.a.topic}" doc:name="Custom object create/update "/>
-        <logger message="Custom object created/updated in Org A #[payload]" level="INFO" doc:name="Details of custom object received"/>
-        <expression-filter expression="#[(payload.get('Name') != null) &amp;&amp;  (payload.get('interpreter__c').equals('The Beatles')) ]" doc:name="Filter if Custom object has no Name"/>
-        <enricher source="#[payload]" target="#[flowVars['idInB']]" doc:name="Store in variable idInB">
-        	<sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM MusicAlbum__c WHERE Name = '#[payload['Name']]'" doc:name="Check custom object in org B"/>
-        </enricher>
-        <expression-component doc:name="Setting ID for Upsert"><![CDATA[if (flowVars['idInB'] instanceof NullPayload) {payload.remove('Id')} else {payload.put('Id',flowVars['idInB'].get('Id'))}]]></expression-component>
-        <set-variable variableName="outputCustomObjectList" value="#[new java.util.ArrayList()]" doc:name="Create variable outputCustomObjectList"/>
-        <expression-component doc:name="Add Custom object to outputCustomObjectList"><![CDATA[outputCustomObjectList.add(payload)]]></expression-component>
-        <sfdc:upsert config-ref="SalesforceB"  doc:name="Upsert Custom Object on variable outputCustomObjectList" externalIdFieldName="Id" type="MusicAlbum__c">
-        	<sfdc:objects ref="#[outputCustomObjectList]"/>
-        </sfdc:upsert>
-        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
-    </flow>
+	<flow name="upsertCustomObjectFromAToB" doc:name="upsertCustomObjectFromAToB">
+		<poll doc:name="Poll">
+			<fixed-frequency-scheduler frequency="60000" />
+			<sfdc:get-updated-objects config-ref="SalesforceA" type="MusicAlbum__c" initialTimeWindow="120"
+				doc:name="Fetch updated/created Custom Objects">
+				<sfdc:fields>
+					<sfdc:field>Id</sfdc:field>
+					<sfdc:field>Name</sfdc:field>
+					<sfdc:field>interpreter__c</sfdc:field>
+					<sfdc:field>year__c</sfdc:field>
+				</sfdc:fields>
+			</sfdc:get-updated-objects>
+		</poll>
+		<logger message="Retrieved updated custom objects: #[payload]" level="INFO" doc:name="Log retrieved custom objects" />
+		<set-variable variableName="filteredCustomObjectList" value="#[new java.util.ArrayList()]" doc:name="filteredCustomObjectList" />
+		<foreach doc:name="For Each retrieved custom object from source system">
+			<expression-filter expression="#[ payload['Name'] != null &amp;&amp; payload['year__c'] &gt; 1968 ]" doc:name="Filter if Custom Object's year greater than 1968" />
+			<enricher source="#[payload]" target="#[flowVars['idInB']]" doc:name="Store in variable idInB">
+				<sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM MusicAlbum__c WHERE Name = '#[payload['Name']]'"
+					doc:name="Check custom object in org B" />
+			</enricher>
+			<expression-component doc:name="Setting ID for Upsert"><![CDATA[if (flowVars['idInB'] instanceof NullPayload) {
+			    // Remove ID as it is an insert
+                payload.remove('Id')
+            } else {
+                // Add target system ID as it is an update
+                payload.put('Id', idInB['Id'])
+            }
+            
+            // In any case, remove the custom fields that do not exist in target system
+            payload.remove('year__c')
+            ]]>
+			</expression-component>
+			<expression-component doc:name="Add Contact to outputContactList"><![CDATA[filteredCustomObjectList.add(payload)]]></expression-component>
+		</foreach>
+		<set-payload value="#[filteredCustomObjectList]" doc:name="Set Payload to the filtered list" />
+		<logger message="Custom objects to update/create: #[payload]" level="INFO" doc:name="Log custom objects to update/create" />
+		<sfdc:upsert config-ref="SalesforceB" externalIdFieldName="Id" type="MusicAlbum__c" doc:name="Upsert custom objects in target system">
+			<sfdc:objects ref="#[payload]" />
+		</sfdc:upsert>
+	</flow>
+
 </mule>
