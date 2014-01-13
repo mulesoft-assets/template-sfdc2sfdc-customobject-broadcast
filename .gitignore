@@ -1,0 +1,61 @@
+# ------------------------------------------------------------------------------ #
+# Java defaults (https://github.com/github/gitignore/blob/master/Java.gitignore) #
+# ------------------------------------------------------------------------------ #
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# ------------------------------------------------------------------------------------------- #
+# Eclipse-specific (https://github.com/github/gitignore/blob/master/Global/Eclipse.gitignore) #
+# ------------------------------------------------------------------------------------------- #
+*.pydevproject
+.metadata
+bin/**
+tmp/**
+tmp/**/*
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+# You may want to remove the sharp symbols here if you are using Maven 
+.project
+.classpath
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# CDT-specific
+.cproject
+
+# PDT-specific
+.buildpath
+
+# Temp files
+**/.*
+# Except git ignore
+!.gitignore
+
+# --------------- #
+# Studio-specific #
+# --------------- #
+.studio/
+./flows/
+target/
+**/*.mflow
+
+# Avoid pushing credentials to repo
+src/test/resources/mule.test.properties
+
+# ------------------------------------------------------------------------ #
+# Added ignore because of https://www.mulesoft.org/jira/browse/STUDIO-4317 #
+# ------------------------------------------------------------------------ #
+./src/main/app/test-flows.xml
