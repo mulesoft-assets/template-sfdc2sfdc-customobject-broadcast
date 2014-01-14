@@ -38,15 +38,6 @@ MusicAlbum
 
 **Note:** Please, take into account that this sample application uses SalesForce Object Query Language which, when querying for custom objects and fields, requires you to append `__c` to your query. So for example, to query the music albums' interptreters, the query would be this way: `SELECT interpreter__c FROM MusicAlbum__c`.
 
-## Using SFDC Streaming API <a name="runit"/>
-
-Before running this Kick you have to configure your SFDC Instance to notify the integration every time a custom object is created or updated, this is accomplished by creating a [Topic](http://wiki.developerforce.com/page/Getting_Started_with_the_Force.com_Streaming_API).
-
-The SOQL Query for the topic has to be `SELECT Id,Department,Email,FirstName,LastName,MailingCity,MailingCountry,MobilePhone,Phone,Title FROM custom object` and this will be the fields updated on the SFDC Instance B upon a create/update on Instance A.
-
-**Note:** SFDC will only react to changes on custom objects if the fields on the query defined before are modified. If you want to have an update when any change on a custom object happens, that could be done by setting to `All` the property `NotifyForFields` of the topic to be used.
-
-
 ## Running on CloudHub <a name="runoncloudhub"/>
 
 While [creating your application on CloudHub](http://www.mulesoft.org/documentation/display/current/Hello+World+on+CloudHub) (Or you can do it later as a next step), you need to go to Deployment > Advanced to set all environment variables detailed in **Properties to be configured** as well as the **mule.env**. 
@@ -57,8 +48,7 @@ Once your app is all set and started, there is no need to do anything else. Ever
 ## Running on premise <a name="runonopremise"/>
 Complete all properties in one of the property files, for example in [mule.prod.properties] (../blob/master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`.
 
-Once your app is all set and started, there is no need to do anything else. Every time a custom object is created or modified, it will be automatically synchronised to SFDC Org B as long as it has an Email.
-
+Once your app is all set and started, there is no need to do anything else. The application will poll SalesForce to know if there are any newly created or updated objects and synchronice them.
 
 ## Properties to be configured (With examples) <a name="propertiestobeconfigured"/>
 

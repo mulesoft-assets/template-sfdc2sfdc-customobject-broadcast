@@ -46,6 +46,7 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 		<sfdc:upsert config-ref="SalesforceB" externalIdFieldName="Id" type="MusicAlbum__c" doc:name="Upsert custom objects in target system">
 			<sfdc:objects ref="#[payload]" />
 		</sfdc:upsert>
+		<exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy" />
 	</flow>
 
 </mule>
