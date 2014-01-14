@@ -21,10 +21,8 @@
 	</properties>
 
 	<build>
-		<!-- Use a newer version of the install plugin than what your Maven uses 
-			by default. The older version failed to install the project if there was 
-			no target/classes folder. Since we use mule packaging on the project we actually 
-			create and attach the zip that must be installed. -->
+		<!-- Use a newer version of the install plugin than what your Maven uses by default. The older version failed to install the project if there 
+			was no target/classes folder. Since we use mule packaging on the project we actually create and attach the zip that must be installed. -->
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -32,8 +30,7 @@
 					<artifactId>maven-install-plugin</artifactId>
 					<version>2.3.1</version>
 				</plugin>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -56,31 +53,31 @@
 									</action>
 								</pluginExecution>
 								<pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>org.apache.maven.plugins</groupId>
-                                        <artifactId>maven-antrun-plugin</artifactId>
-                                        <versionRange>[1.7,)</versionRange>
-                                        <goals>
-                                            <goal>run</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore></ignore>
-                                    </action>
-                                </pluginExecution>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>org.apache.maven.plugins</groupId>
-                                        <artifactId>maven-dependency-plugin</artifactId>
-                                        <versionRange>[2.4,)</versionRange>
-                                        <goals>
-                                            <goal>copy</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore></ignore>
-                                    </action>
-                                </pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-antrun-plugin</artifactId>
+										<versionRange>[1.7,)</versionRange>
+										<goals>
+											<goal>run</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>[2.4,)</versionRange>
+										<goals>
+											<goal>copy</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
@@ -88,6 +85,27 @@
 			</plugins>
 		</pluginManagement>
 		<plugins>
+			<!-- Integration Tests -->
+			<plugin>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.6</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<useFile>false</useFile>
+					<additionalClasspathElements>
+						<additionalClasspathElement>${MULE_HOME}/conf/</additionalClasspathElement>
+						<!-- Location of the mule licence in Bamboo muleLicenseKey.lic -->
+						<additionalClasspathElement>/home/j2ee-bamboo/license</additionalClasspathElement>
+					</additionalClasspathElements>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.mule.tools</groupId>
 				<artifactId>maven-mule-plugin</artifactId>
@@ -99,6 +117,10 @@
 						<inclusion>
 							<groupId>org.mule.modules</groupId>
 							<artifactId>mule-module-sfdc</artifactId>
+						</inclusion>
+						<inclusion>
+							<groupId>org.mule.modules</groupId>
+							<artifactId>mule-module-devkit-support</artifactId>
 						</inclusion>
 					</inclusions>
 				</configuration>
@@ -213,8 +235,7 @@
 						<configuration>
 							<tasks>
 								<!-- Using an ant task to deflate cloveretl-engine.zip -->
-								<unzip dest="${project.build.testOutputDirectory}"
-									src="${project.build.testOutputDirectory}/cloveretl-engine.zip" />
+								<unzip dest="${project.build.testOutputDirectory}" src="${project.build.testOutputDirectory}/cloveretl-engine.zip" />
 							</tasks>
 						</configuration>
 						<goals>
@@ -331,6 +352,11 @@
 		<dependency>
 			<groupId>com.mulesoft.muleesb.modules</groupId>
 			<artifactId>mule-module-data-mapper</artifactId>
+			<version>${mule.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-module-devkit-support</artifactId>
 			<version>${mule.version}</version>
 		</dependency>
 		<!-- Xml configuration -->

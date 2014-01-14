@@ -7,8 +7,7 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
 
 	<flow name="upsertCustomObjectFromAToB" doc:name="upsertCustomObjectFromAToB">
-		<poll doc:name="Poll">
-			<fixed-frequency-scheduler frequency="60000" />
+		<poll frequency="${poll.frequencyMillis}" doc:name="Poll">
 			<sfdc:get-updated-objects config-ref="SalesforceA" type="MusicAlbum__c" initialTimeWindow="120"
 				doc:name="Fetch updated/created Custom Objects">
 				<sfdc:fields>
@@ -46,7 +45,6 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 		<sfdc:upsert config-ref="SalesforceB" externalIdFieldName="Id" type="MusicAlbum__c" doc:name="Upsert custom objects in target system">
 			<sfdc:objects ref="#[payload]" />
 		</sfdc:upsert>
-		<exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy" />
 	</flow>
 
 </mule>
