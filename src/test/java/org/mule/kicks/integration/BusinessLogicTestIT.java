@@ -130,10 +130,10 @@ public class BusinessLogicTestIT extends AbstractKickTestCase {
                     assertEquals("The custom object should have been sync", createdCustomObjectsInA.get(2).get("Name"), payload.get("Name"));
 
                     // Assert fourth object was updated in target system
-                    Map<String, String> customObject = createdCustomObjectsInA.get(3);
-                    payload = invokeRetrieveCustomObjectFlow(checkCustomObjectflow, customObject);
-                    assertEquals("The custom object should have been sync (Name)", customObject.get("Name"), payload.get("Name"));
-                    assertEquals("The custom object should have been sync (interpreter__c)", customObject.get("interpreter__c"), payload.get("interpreter__c"));
+                    final Map<String, String> fourthCustomObject = createdCustomObjectsInA.get(3);
+                    payload = invokeRetrieveCustomObjectFlow(checkCustomObjectflow, fourthCustomObject);
+                    assertEquals("The custom object should have been sync (Name)", fourthCustomObject.get("Name"), payload.get("Name"));
+                    assertEquals("The custom object should have been sync (interpreter__c)", fourthCustomObject.get("interpreter__c"), payload.get("interpreter__c"));
 
                     return true;
 
