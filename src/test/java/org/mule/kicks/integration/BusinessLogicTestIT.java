@@ -174,6 +174,10 @@ public class BusinessLogicTestIT extends AbstractKickTestCase {
             return (Map<String, String>) payload;
         }
     }
+    
+    // ***************************************************************
+    // ======== CustomObjectBuilder class ========
+    // ***************************************************************
 
     private CustomObjectBuilder aCustomObject() {
         return new CustomObjectBuilder();
