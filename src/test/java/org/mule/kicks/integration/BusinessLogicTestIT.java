@@ -43,6 +43,8 @@ public class BusinessLogicTestIT extends AbstractKickTestCase {
     @Before
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
+        stopSchedulers();
+        
         // Flow to retrieve custom objects from target system after syncing
         checkCustomObjectflow = getSubFlow("retrieveCustomObjectFlow");
         checkCustomObjectflow.initialise();
@@ -130,6 +132,8 @@ public class BusinessLogicTestIT extends AbstractKickTestCase {
 
     @Test
     public void testMainFlow() throws Exception {
+        startSchedulers();
+        
         workingPollProber.check(new AssertionProbe() {
             @Override
             public void assertSatisfied() throws Exception {
@@ -157,6 +161,14 @@ public class BusinessLogicTestIT extends AbstractKickTestCase {
 
         for (final Scheduler scheduler : schedulers) {
             scheduler.stop();
+        }
+    }
+    
+    private void startSchedulers() throws Exception {
+        final Collection<Scheduler> schedulers = muleContext.getRegistry().lookupScheduler(Schedulers.flowPollingSchedulers("upsertCustomObjectFromAToB"));
+        
+        for (final Scheduler scheduler : schedulers) {
+            scheduler.schedule();
         }
     }
 
