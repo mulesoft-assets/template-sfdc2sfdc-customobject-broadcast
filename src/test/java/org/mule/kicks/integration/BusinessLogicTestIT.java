@@ -8,10 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.ws.BindingType;
+
 import junit.framework.Assert;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
@@ -39,6 +42,20 @@ public class BusinessLogicTestIT extends AbstractKickTestCase {
     private static List<Map<String, String>> createdCustomObjectsInA = new ArrayList<Map<String, String>>();
 
     private final Prober workingPollProber = new PollingProber(60000, 1000l);
+    
+    @BeforeClass
+    public static void setTestProperties() {
+    	System.setProperty("page.size", "1000");
+    	
+    	// Set the frequency between polls to 10 seconds
+    	System.setProperty("poll.frequencyMillis", "10000");
+    	
+    	// Set the poll starting delay to 20 seconds
+    	System.setProperty("poll.startDelayMillis", "20000");
+    	
+		//Setting Default Watermark Expression to query SFDC with LastModifiedDate greater than ten seconds before current time
+    	System.setProperty("watermark.default.expression", "#[groovy: new Date(System.currentTimeMillis() - 10000).format(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", TimeZone.getTimeZone('UTC'))]");
+    }
 
     @Before
     @SuppressWarnings("unchecked")
@@ -102,7 +119,7 @@ public class BusinessLogicTestIT extends AbstractKickTestCase {
         }
     }
 
-    @After
+	@After
     public void tearDown() throws Exception {
         stopSchedulers();
 
@@ -157,7 +174,7 @@ public class BusinessLogicTestIT extends AbstractKickTestCase {
     }
 
     private void stopSchedulers() throws MuleException {
-        final Collection<Scheduler> schedulers = muleContext.getRegistry().lookupScheduler(Schedulers.flowPollingSchedulers("upsertCustomObjectFromAToB"));
+        final Collection<Scheduler> schedulers = muleContext.getRegistry().lookupScheduler(Schedulers.flowPollingSchedulers("triggerFlow"));
 
         for (final Scheduler scheduler : schedulers) {
             scheduler.stop();
@@ -165,7 +182,7 @@ public class BusinessLogicTestIT extends AbstractKickTestCase {
     }
     
     private void startSchedulers() throws Exception {
-        final Collection<Scheduler> schedulers = muleContext.getRegistry().lookupScheduler(Schedulers.flowPollingSchedulers("upsertCustomObjectFromAToB"));
+        final Collection<Scheduler> schedulers = muleContext.getRegistry().lookupScheduler(Schedulers.flowPollingSchedulers("triggerFlow"));
         
         for (final Scheduler scheduler : schedulers) {
             scheduler.schedule();

@@ -1,29 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns="http://www.mulesoft.org/schema/mule/core"
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
-http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
 
-	<flow name="upsertCustomObjectFromAToB" processingStrategy="synchronous"
-		doc:name="upsertCustomObjectFromAToB">
-		<poll doc:name="Poll">
-			<fixed-frequency-scheduler frequency="${poll.frequencyMillis}"
-				startDelay="${poll.startDelayMillis}" />
-			<!-- We are starting to sync from 10 seconds ago in UTC (as it's the time 
-				zone SalesForce uses) -->
-			<watermark variable="lastQueryDate"
-				default-expression="#[groovy: new Date(System.currentTimeMillis() - 10000).format(&quot;yyyy-MM-dd'T'HH:mm:ss.SSS'Z'&quot;, TimeZone.getTimeZone('UTC'))]"
-				selector="MAX" selector-expression="#[payload.LastModifiedDate]" />
-			<sfdc:query-all config-ref="SalesforceA"
-				doc:name="Fetch Custom objects with filtering criteria"
-				query="SELECT Id, Name, interpreter__c, year__c, LastModifiedDate FROM MusicAlbum__c WHERE LastModifiedDate &gt; #[flowVars['lastQueryDate']] AND year__c &gt; 1968" />
-		</poll>
-		<logger level="INFO" message="LastQueryDate = #[lastQueryDate]"
-			doc:name="Logger" />
+	<flow name="mainFlow" processingStrategy="synchronous" doc:name="mainFlow">
 		<set-variable variableName="outputCustomObjectList"
 			value="#[new java.util.ArrayList()]" doc:name="outputCustomObjectList" />
 		<foreach doc:name="For Each retrieved custom object from source system">
@@ -33,8 +19,6 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 					query="SELECT Id FROM MusicAlbum__c WHERE Name = '#[payload['Name']]'"
 					doc:name="Check custom object in org B" />
 			</enricher>
-			<logger level="INFO" message="Custom Object in B = #[idInB]"
-				doc:name="Logger" />
 			<expression-component doc:name="Setting ID for Upsert"><![CDATA[if (flowVars['idInB'] instanceof NullPayload) {
                  // Remove ID as it is an insert
                  payload.remove('Id')
@@ -46,8 +30,6 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
  	            payload.remove('LastModifiedDate');
  	            payload.remove('year__c')
              ]]></expression-component>
-			<logger level="INFO" message="Custom object to sync: #[payload]"
-				doc:name="Logger" />
 			<expression-component doc:name="Add Custom object to outputCustomObjectList"><![CDATA[outputCustomObjectList.add(payload);]]></expression-component>
 		</foreach>
 		<set-payload value="#[outputCustomObjectList]" doc:name="Set Payload to the output list" />
