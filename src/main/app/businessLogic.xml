@@ -9,34 +9,35 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
 
-	<flow name="mainFlow" processingStrategy="synchronous" doc:name="mainFlow">
+	<flow name="mainFlow" processingStrategy="synchronous" doc:name="mainFlow" doc:description="This flow is the entry point to the Kick business logic.
+This flow should control the direction of the application, and it should be called by the different endpoints that your Kick exposes to trigger it.">
 		<set-variable variableName="outputCustomObjectList"
-			value="#[new java.util.ArrayList()]" doc:name="outputCustomObjectList" />
-		<foreach doc:name="For Each retrieved custom object from source system">
+			value="#[new java.util.ArrayList()]" doc:name="initialize outputCustomObjectList" />
+		<foreach doc:name="For Each retrieved custom object from Salesforce Instance A">
 			<enricher source="#[payload]" target="#[flowVars['idInB']]"
-				doc:name="Store in variable idInB">
+				doc:name="store Custom object in idInB">
 				<sfdc:query-single config-ref="SalesforceB"
 					query="SELECT Id FROM MusicAlbum__c WHERE Name = '#[payload['Name']]'"
-					doc:name="Check custom object in org B" />
+					doc:name="query Custom object in Salesforce Instance B" />
 			</enricher>
-			<expression-component doc:name="Setting ID for Upsert"><![CDATA[if (flowVars['idInB'] instanceof NullPayload) {
+			<expression-component doc:name="set ID for upsert"><![CDATA[if (flowVars['idInB'] instanceof NullPayload) {
                  // Remove ID as it is an insert
                  payload.remove('Id')
              } else {
                  // Add target system ID as it is an update
                  payload.put('Id', idInB['Id'])
              }]]></expression-component>
-			<expression-component doc:name="Remove unnecessary fields"><![CDATA[
+			<expression-component doc:name="remove unnecessary fields"><![CDATA[
  	            payload.remove('LastModifiedDate');
  	            payload.remove('year__c')
              ]]></expression-component>
-			<expression-component doc:name="Add Custom object to outputCustomObjectList"><![CDATA[outputCustomObjectList.add(payload);]]></expression-component>
+			<expression-component doc:name="add Custom object to outputCustomObjectList"><![CDATA[outputCustomObjectList.add(payload);]]></expression-component>
 		</foreach>
-		<set-payload value="#[outputCustomObjectList]" doc:name="Set Payload to the output list" />
+		<set-payload value="#[outputCustomObjectList]" doc:name="set to outputCustomObjectList" />
 		<logger message="Custom objects to update/create: #[payload]"
-			level="INFO" doc:name="Log custom objects to update/create" />
+			level="INFO" doc:name="log Custom objects to update/create" />
 		<sfdc:upsert config-ref="SalesforceB" externalIdFieldName="Id"
-			type="MusicAlbum__c" doc:name="Upsert custom objects in target system">
+			type="MusicAlbum__c" doc:name="upsert Custom objects in Salesforce Instance B">
 			<sfdc:objects ref="#[outputCustomObjectList]" />
 		</sfdc:upsert>
 	</flow>
