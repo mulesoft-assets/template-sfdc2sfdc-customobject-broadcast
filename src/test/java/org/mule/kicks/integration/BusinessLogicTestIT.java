@@ -4,13 +4,10 @@ import static junit.framework.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.ws.BindingType;
-
-import junit.framework.Assert;
 
 import org.junit.After;
 import org.junit.Before;
@@ -21,10 +18,8 @@ import org.mule.api.MuleEvent;
 import org.mule.api.MuleException;
 import org.mule.api.schedule.Scheduler;
 import org.mule.api.schedule.Schedulers;
-import org.mule.construct.Flow;
 import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
 import org.mule.tck.probe.PollingProber;
-import org.mule.tck.probe.Probe;
 import org.mule.tck.probe.Prober;
 import org.mule.transport.NullPayload;
 
@@ -73,7 +68,7 @@ public class BusinessLogicTestIT extends AbstractKickTestCase {
         final List<Map<String, String>> createdCustomObjectsInB = new ArrayList<Map<String, String>>();
         // This custom object should BE synced (updated) as the year is greater than 1968 and the record exists in the target system
         createdCustomObjectsInB.add(aCustomObject()
-                                        .withProperty("Name", "Physical Graffiti")
+                                        .withProperty("Name", buildUniqueName("Physical Graffiti"))
                                         .withProperty("interpreter__c", "Lead Zep")
                                         .withProperty("genre__c", "Hard Rock")
                                         .build());
@@ -86,28 +81,28 @@ public class BusinessLogicTestIT extends AbstractKickTestCase {
 
         // This custom object should not be synced as the year is not greater than 1968
         createdCustomObjectsInA.add(aCustomObject()
-                                        .withProperty("Name", "Are You Experienced")
+                                        .withProperty("Name", buildUniqueName("Are You Experienced"))
                                         .withProperty("interpreter__c", "Jimi Hendrix")
                                         .withProperty("year__c", "1967")
                                         .build());
 
         // This custom object should not be synced as the year is not greater than 1968
         createdCustomObjectsInA.add(aCustomObject()
-                                        .withProperty("Name", "Revolver")
+                                        .withProperty("Name", buildUniqueName("Revolver"))
                                         .withProperty("interpreter__c", "The Beatles")
                                         .withProperty("year__c", "1966")
                                         .build());
 
         // This custom object should BE synced (inserted) as the year is greater than 1968 and the record doesn't exist in the target system
         createdCustomObjectsInA.add(aCustomObject()
-                                        .withProperty("Name", "Amputechture")
+                                        .withProperty("Name", buildUniqueName("Amputechture"))
                                         .withProperty("interpreter__c", "The Mars Volta")
                                         .withProperty("year__c", "2006")
                                         .build());
 
         // This custom object should BE synced (updated) as the year is greater than 1968 and the record exists in the target system
         createdCustomObjectsInA.add(aCustomObject()
-                                        .withProperty("Name", "Physical Graffiti")
+                                        .withProperty("Name", buildUniqueName("Physical Graffiti"))
                                         .withProperty("interpreter__c", "Led Zeppelin")
                                         .withProperty("year__c", "1975")
                                         .build());
@@ -207,6 +202,19 @@ public class BusinessLogicTestIT extends AbstractKickTestCase {
     // ***************************************************************
     // ======== CustomObjectBuilder class ========
     // ***************************************************************
+    private String buildUniqueName(String name) {
+		String kickName = "customobjectoneway";
+		String timeStamp = new Long(new Date().getTime()).toString();
+
+		StringBuilder builder = new StringBuilder();
+		builder.append(name);
+		builder.append(kickName);
+		builder.append(timeStamp);
+
+		return builder.toString();
+
+	}
+    
 
     private CustomObjectBuilder aCustomObject() {
         return new CustomObjectBuilder();
