@@ -1,4 +1,4 @@
-# Mule Kick: SFDC to SFDC Automatic Custom Object Sync
+# Mule Kick: SFDC to SFDC Custom Object One Way Sync
 
 + [Use Case](#usecase)
 + [Run it!](#runit)
@@ -56,6 +56,9 @@ In order to use this Mule Kick you need to configure properties (Credentials, co
 
 ### Application configuration
 + http.port `9090` 
++ poll.frequencyMillis `60000`
++ poll.startDelayMillis `0`
++ watermark.defaultExpression `YESTERDAY`
 
 #### SalesForce Connector configuration for company A
 + sfdc.a.username `bob.dylan@orga`
@@ -83,6 +86,7 @@ Here is a list of the main XML files you'll find in this application:
 
 * [config.xml](#configxml)
 * [businessLogic.xml](#businesslogicxml)
+* [inboundEndpoints.xml](#inboundendpointsxml)
 * [errorHandling.xml](#errorhandlingxml)
 
 
