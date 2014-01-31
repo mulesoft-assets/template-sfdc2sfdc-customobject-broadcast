@@ -21,8 +21,10 @@
 	</properties>
 
 	<build>
-		<!-- Use a newer version of the install plugin than what your Maven uses by default. The older version failed to install the project if there 
-			was no target/classes folder. Since we use mule packaging on the project we actually create and attach the zip that must be installed. -->
+		<!-- Use a newer version of the install plugin than what your Maven uses 
+			by default. The older version failed to install the project if there was 
+			no target/classes folder. Since we use mule packaging on the project we actually 
+			create and attach the zip that must be installed. -->
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -30,7 +32,8 @@
 					<artifactId>maven-install-plugin</artifactId>
 					<version>2.3.1</version>
 				</plugin>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -121,6 +124,10 @@
 						<inclusion>
 							<groupId>org.mule.modules</groupId>
 							<artifactId>mule-module-devkit-support</artifactId>
+						</inclusion>
+						<inclusion>
+							<groupId>org.mule.modules</groupId>
+							<artifactId>mule-module-json</artifactId>
 						</inclusion>
 					</inclusions>
 				</configuration>
@@ -235,7 +242,8 @@
 						<configuration>
 							<tasks>
 								<!-- Using an ant task to deflate cloveretl-engine.zip -->
-								<unzip dest="${project.build.testOutputDirectory}" src="${project.build.testOutputDirectory}/cloveretl-engine.zip" />
+								<unzip dest="${project.build.testOutputDirectory}"
+									src="${project.build.testOutputDirectory}/cloveretl-engine.zip" />
 							</tasks>
 						</configuration>
 						<goals>
@@ -420,6 +428,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-module-json</artifactId>
+			<version>${mule.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-module-scripting</artifactId>
 			<version>${mule.version}</version>
 			<scope>provided</scope>
@@ -437,6 +451,18 @@
 			<scope>provided</scope>
 		</dependency>
 		<!-- for testing -->
+		<dependency>
+			<groupId>xalan</groupId>
+			<artifactId>xalan</artifactId>
+			<version>2.7.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.muleesb.modules</groupId>
+			<artifactId>mule-module-batch-ee</artifactId>
+			<version>${mule.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.mule.tests</groupId>
 			<artifactId>mule-tests-functional</artifactId>

@@ -76,11 +76,11 @@ public class AbstractKickTestCase extends FunctionalTestCase {
 	}
 
 	protected Flow getFlow(String flowName) {
-		return (Flow) muleContext.getRegistry().lookupObject(flowName);
+		return muleContext.getRegistry().lookupObject(flowName);
 	}
 
 	protected SubflowInterceptingChainLifecycleWrapper getSubFlow(String flowName) {
-		return (SubflowInterceptingChainLifecycleWrapper) muleContext.getRegistry().lookupObject(flowName);
+		return muleContext.getRegistry().lookupObject(flowName);
 	}
 
 }
