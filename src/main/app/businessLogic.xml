@@ -24,7 +24,7 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
         </poll>
         </batch:input>
 		<batch:process-records>
-			<batch:step name="getCustomObjectInBStep">
+			<batch:step name="foreachCustomObjectinAGetCustomObjectInBStep">
 				<enricher source="#[payload]" target="#[recordVars['customObjectInB']]"
 					doc:name="store result in record var 'customObjectInB'">
 					<sfdc:query-single config-ref="SalesforceB"
@@ -32,7 +32,7 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
 						doc:name="query Custom object in Salesforce Instance B" />
 				</enricher>
 			</batch:step>
-			<batch:step name="createCustomObjectsInBStep">
+			<batch:step name="foreachCustomObjectinAUpsertCustomObjectsInBStep">
 				<expression-component doc:name="set ID for upsert"><![CDATA[if (recordVars['customObjectInB'] instanceof NullPayload) {
 	// Remove ID as it is an insert
 	payload.remove('Id')
@@ -40,8 +40,10 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
 	// Add target system ID as it is an update
     payload.put('Id', recordVars['customObjectInB']['Id'])
 }]]></expression-component>
-				<expression-component doc:name="remove unnecessary fields"><![CDATA[payload.remove('LastModifiedDate');
-payload.remove('year__c');             ]]></expression-component>
+				<expression-component doc:name="remove unnecessary fields and map custom fields"><![CDATA[payload.remove('LastModifiedDate');
+
+// TODO - Here you should remove all custom fields that don't exist in the target system and map the ones that vary in type/format
+payload.remove('year__c');]]></expression-component>
 				<batch:commit size="200" doc:name="Batch Commit">
 					<logger message="Custom objects to update/create: #[payload]"
 						level="INFO" doc:name="log Custom objects to update/create" />

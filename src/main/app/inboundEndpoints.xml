@@ -4,6 +4,9 @@
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd">
+    <flow name="dummyFlow" doc:name="dummyFlow">
+        <logger level="INFO" doc:name="For the inbound endpoint, please see the Input phase from the batch job in businessLogic.xml"/>
+    </flow>
     
 	<!-- For the inbound endpoint, please see the Input phase from the batch job in businessLogic.xml -->
 
