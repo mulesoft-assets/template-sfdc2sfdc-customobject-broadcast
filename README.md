@@ -120,7 +120,7 @@ This is file is not used in this particular kick, but you'll oftenly find flows 
 ## errorHandling.xml<a name="errorhandlingxml"/>
 Contains a [Catch Exception Strategy](http://www.mulesoft.org/documentation/display/current/Catch+Exception+Strategy) that is only Logging the exception thrown (If so). As you imagine, this is the right place to handle how your integration will react depending on the different exceptions.
 
-## Testing the Kick <a name="testingthekick"/>
+# Testing the Kick <a name="testingthekick"/>
 
 You will notice that the Kick has been shipped with test.
 These devidi them self into two categories:
