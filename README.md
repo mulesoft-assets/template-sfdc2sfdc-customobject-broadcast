@@ -2,21 +2,30 @@
 
 + [Use Case](#usecase)
 + [Run it!](#runit)
+	* [Create the Custom Object schemas in both organizations](#createcustomobjects")
     * [Running on CloudHub](#runoncloudhub)
     * [Running on premise](#runonopremise)
     * [Properties to be configured](#propertiestobeconfigured)
 + [Customize It!](#customizeit)
     * [config.xml](#configxml)
     * [businessLogic.xml](#businesslogicxml)
+    * [inboundEndpoints.xml](#inboundendpointsxml)
     * [errorHandling.xml](#errorhandlingxml)
 
 
 # Use Case <a name="usecase"/>
 As a Salesforce admin I want to syncronize custom objects between two Salesfoce orgs.
 
-This Kick (template) should serve as a foundation for setting an online sync of custom objects from one SalesForce instance to another. Everytime there is a new custom object or a change in an already existing one, SFDC Streaming API will notify this integration that will be responsible for updating the custom object on the target org.
+This Kick (template) should serve as a foundation for setting an online sync of custom objects from one SalesForce instance to another. Everytime there is a new custom object or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the custom object on the target org.
 
-Requirements have been set not only to be used as examples, but also to stablish starting point to adapt your integration to your requirements.
+Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
+
+As implemented, this Kick leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
+The batch job is divided in Input, Process and On Complete stages.
+During the Input stage the Kick will go to the SalesForce Org A and query all the existing users that match the filter criteria.
+During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
+The last step of the Process stage will group the users and create/update them in SFDC Org B.
+Finally during the On Complete stage the Kick will logoutput statistics data into the console.
 
 # Run it!
 
@@ -97,13 +106,15 @@ In the visual editor they can be found on the *Global Element* tab.
 
 
 ## businessLogic.xml<a name="businesslogicxml"/>
-Functional aspect of the kick is implemented on this XML, directed by one flow that will react upon notifications received from SalesForce Streaming API. The severeal message processors constitute four high level actions that fully implement the logic of this Kick:
+Functional aspect of the kick is implemented on this XML, directed by one flow that will poll for SalesForce creations/updates. The severeal message processors constitute four high level actions that fully implement the logic of this Kick:
 
-1. Suscribe-topic message processor listeting to event from the topic configured in the SalesForce instance.
-2. Filtering of custom objects that must have an Email and the Mailing Country have to be either **US**, **U.S.** or  **United States**. This is the point where you can configure your own filtering criteria.
-3. Checking if custom object already exists in target instance by EMail. Step needed to add the extisting ID to update the custom object.
-4. Update or create of the custom object in target instance.
+1. During the Input stage the Kick will go to the SalesForce Org A and query all the existing users that match the filter criteria.
+2. During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
+3. The last step of the Process stage will group the users and create/update them in SFDC Org B.
+Finally during the On Complete stage the Kick will logoutput statistics data into the console.
 
+## inboundEndpoints.xml<a name="inboundendpointsxml"/>
+This is file is not used in this particular kick, but you'll oftenly find flows containing the inbound endpoints to start the integration.
 
 ## errorHandling.xml<a name="errorhandlingxml"/>
 Contains a [Catch Exception Strategy](http://www.mulesoft.org/documentation/display/current/Catch+Exception+Strategy) that is only Logging the exception thrown (If so). As you imagine, this is the right place to handle how your integration will react depending on the different exceptions. 
