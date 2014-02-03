@@ -82,8 +82,6 @@ In order to use this Mule Kick you need to configure properties (Credentials, co
 + sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
 + sfdc.b.url `https://login.salesforce.com/services/Soap/u/28.0`
 
-It is important to put the `/` before the name of the topic like showed above (The example is about a topic just named *custom objectstopic*).
-
 
 
 # Customize It!<a name="customizeit"/>
