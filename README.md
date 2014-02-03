@@ -11,7 +11,8 @@
     * [businessLogic.xml](#businesslogicxml)
     * [inboundEndpoints.xml](#inboundendpointsxml)
     * [errorHandling.xml](#errorhandlingxml)
-
++ [Testing the Kick](#testingthekick)
+ 
 
 # Use Case <a name="usecase"/>
 As a Salesforce admin I want to syncronize custom objects between two Salesfoce orgs.
@@ -117,4 +118,20 @@ Finally during the On Complete stage the Kick will logoutput statistics data int
 This is file is not used in this particular kick, but you'll oftenly find flows containing the inbound endpoints to start the integration.
 
 ## errorHandling.xml<a name="errorhandlingxml"/>
-Contains a [Catch Exception Strategy](http://www.mulesoft.org/documentation/display/current/Catch+Exception+Strategy) that is only Logging the exception thrown (If so). As you imagine, this is the right place to handle how your integration will react depending on the different exceptions. 
+Contains a [Catch Exception Strategy](http://www.mulesoft.org/documentation/display/current/Catch+Exception+Strategy) that is only Logging the exception thrown (If so). As you imagine, this is the right place to handle how your integration will react depending on the different exceptions.
+
+## Testing the Kick <a name="testingthekick"/>
+
+You will notice that the Kick has been shipped with test.
+These devidi them self into two categories:
+
++ Unit Tests
++ Integration Tests
+
+You can run any of them by just doing right click on the class and clicking on run as Junit test.
+
+Do bear in mind that you'll have to tell the test classes which property file to use.
+For you convinience we have added a file mule.test.properties located in "src/test/resources".
+In the run configurations of the test just make sure to add the following property:
+
++ -Dmule.env=test
