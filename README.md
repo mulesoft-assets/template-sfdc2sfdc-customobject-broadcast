@@ -2,14 +2,14 @@
 
 + [Use Case](#usecase)
 + [Run it!](#runit)
-	* [Create the Custom Object schemas in both organizations](#createcustomobjects")
+	* [Create the Custom Object schemas in both organizations](#createcustomobjects)
     * [Running on CloudHub](#runoncloudhub)
     * [Running on premise](#runonopremise)
     * [Properties to be configured](#propertiestobeconfigured)
 + [Customize It!](#customizeit)
     * [config.xml](#configxml)
-    * [businessLogic.xml](#businesslogicxml)
     * [inboundEndpoints.xml](#inboundendpointsxml)
+    * [businessLogic.xml](#businesslogicxml)
     * [errorHandling.xml](#errorhandlingxml)
 + [Testing the Kick](#testingthekick)
  
@@ -95,8 +95,8 @@ Of course more files will be found such as Test Classes and [Mule Application Fi
 Here is a list of the main XML files you'll find in this application:
 
 * [config.xml](#configxml)
-* [businessLogic.xml](#businesslogicxml)
 * [inboundEndpoints.xml](#inboundendpointsxml)
+* [businessLogic.xml](#businesslogicxml)
 * [errorHandling.xml](#errorhandlingxml)
 
 
