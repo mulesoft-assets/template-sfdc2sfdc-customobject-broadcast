@@ -14,8 +14,10 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<mule.version>3.5.0-M4</mule.version>
-		<sfdc.version>5.4.3</sfdc.version>
+		<munit.version>3.5-M1</munit.version>
 		<junit.version>4.9</junit.version>
+
+		<sfdc.version>5.4.3</sfdc.version>
 
 		<eclipsePluginVersion>2.8</eclipsePluginVersion>
 		<jdkName>JavaSE-1.6</jdkName>
@@ -452,25 +454,8 @@
 			<version>${mule.version}</version>
 			<scope>provided</scope>
 		</dependency>
+
 		<!-- for testing -->
-		<dependency>
-			<groupId>xalan</groupId>
-			<artifactId>xalan</artifactId>
-			<version>2.7.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.mulesoft.muleesb.modules</groupId>
-			<artifactId>mule-module-batch-ee</artifactId>
-			<version>${mule.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mule.tests</groupId>
-			<artifactId>mule-tests-functional</artifactId>
-			<version>${mule.version}</version>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>mockobjects</groupId>
 			<artifactId>mockobjects-core</artifactId>
@@ -484,11 +469,38 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.mule.tests</groupId>
+			<artifactId>mule-tests-functional</artifactId>
+			<version>${mule.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.cloveretl</groupId>
 			<artifactId>cloveretl-engine</artifactId>
 			<version>${mule.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-module-devkit-support</artifactId>
+			<version>${mule.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.muleesb.modules</groupId>
+			<artifactId>mule-module-batch-ee</artifactId>
+			<version>${mule.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.muleesb.modules</groupId>
+			<artifactId>mule-module-batch-ee</artifactId>
+			<version>${mule.version}</version>
+			<scope>test</scope>
+			<type>test-jar</type>
+		</dependency>
+
+		<!-- Connectors -->
 		<dependency>
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-module-sfdc</artifactId>

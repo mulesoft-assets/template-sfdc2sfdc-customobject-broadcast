@@ -2,13 +2,14 @@
 
 + [Use Case](#usecase)
 + [Run it!](#runit)
-	* [Create the Custom Object schemas in both organizations](#createcustomobjects)
+	* [Running on premise](#runonopremise)
     * [Running on CloudHub](#runoncloudhub)
-    * [Running on premise](#runonopremise)
-    * [Properties to be configured](#propertiestobeconfigured)
+    * [Create the Custom Object schemas in both organizations](#createcustomobjects)
+	* [Properties to be configured](#propertiestobeconfigured)
++ [API Calls](#apicalls)
 + [Customize It!](#customizeit)
     * [config.xml](#configxml)
-    * [inboundEndpoints.xml](#inboundendpointsxml)
+    * [endpoints.xml](#endpointsxml)
     * [businessLogic.xml](#businesslogicxml)
     * [errorHandling.xml](#errorhandlingxml)
 + [Testing the Anypoint Template](#testingtheanypointtemplate)
@@ -32,6 +33,39 @@ Finally during the On Complete stage the Anypoint Template will logoutput statis
 
 Simple steps to get SFDC to SFDC Custom Objects Sync running.
 
+In any of the ways you would like to run this Anypoint Template, here is an example of the output you'll see after hitting the HTTP endpoint:
+
+<pre>
+<h1>Batch Process initiated</h1>
+<b>ID:</b>6eea3cc6-7c96-11e3-9a65-55f9f3ae584e<br/>
+<b>Records to Be Processed: </b>9<br/>
+<b>Start execution on: </b>Mon Jan 13 18:05:33 GMT-03:00 2014
+</pre>
+
+## Running on premise <a name="runonopremise"/>
+
+In this section we detail the way you have to run you Anypoint Temple on you computer.
+
+### Running on Studio <a name="runonstudio"/>
+Once you have imported you Anypoint Template into Anypoint Studio you need to follow these steps to run it:
+
++ Locate the properties file `mule.dev.properties`, in src/main/resources
++ Complete all the properties required as per the examples in the section [Properties to be configured](#propertiestobeconfigured)
++ Once that is done, right click on you Anypoint Template project folder 
++ Hover you mouse over `"Run as"`
++ Click on  `"Mule Application"`
+
+
+### Running on Mule ESB stand alone <a name="runonmuleesbstandalone"/> 
+Complete all properties in one of the property files, for example in [mule.prod.properties] (../blob/master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`.
+
+
+## Running on CloudHub <a name="runoncloudhub"/>
+
+While [creating your application on CloudHub](http://www.mulesoft.org/documentation/display/current/Hello+World+on+CloudHub) (Or you can do it later as a next step), you need to go to Deployment > Advanced to set all environment variables detailed in **Properties to be configured** as well as the **mule.env**. 
+
+Once your app is all set and started, there is no need to do anything else. Every time a custom object is created or modified, it will be automatically synchronised to SFDC Org B as long as it has an Email.
+
 ## Create the Custom Object schemas in both organizations <a name="createcustomobjects" />
 
 In order to run the Anypoint Template as is, you'll need to create the custom objects provided in your Salesforce accounts. In order to do so, [please follow the steps documented in SalesForce documentation](http://www.salesforce.com/us/developer/docs/apexcode/Content/apex_qs_customobject.htm).
@@ -48,17 +82,6 @@ MusicAlbum
 
 **Note:** Please, take into account that this sample application uses SalesForce Object Query Language which, when querying for custom objects and fields, requires you to append `__c` to your query. So for example, to query the music albums' interptreters, the query would be this way: `SELECT interpreter__c FROM MusicAlbum__c`.
 
-## Running on CloudHub <a name="runoncloudhub"/>
-
-While [creating your application on CloudHub](http://www.mulesoft.org/documentation/display/current/Hello+World+on+CloudHub) (Or you can do it later as a next step), you need to go to Deployment > Advanced to set all environment variables detailed in **Properties to be configured** as well as the **mule.env**. 
-
-Once your app is all set and started, there is no need to do anything else. Every time a custom object is created or modified, it will be automatically synchronised to SFDC Org B as long as it has an Email.
-
-
-## Running on premise <a name="runonopremise"/>
-Complete all properties in one of the property files, for example in [mule.prod.properties] (../blob/master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`.
-
-Once your app is all set and started, there is no need to do anything else. The application will poll SalesForce to know if there are any newly created or updated objects and synchronice them.
 
 ## Properties to be configured (With examples) <a name="propertiestobeconfigured"/>
 
@@ -82,6 +105,17 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
 + sfdc.b.url `https://login.salesforce.com/services/Soap/u/28.0`
 
+# API Calls <a name="apicalls"/>
+
+SalesForce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. Custom Object Broadcast Template calls to the API can be calculated using the formula:
+
+***1 + X + X / 200***
+
+Being ***X*** the number of Custom Objects to be synchronized on each run. 
+
+The division by ***200*** is because, by default, Custom Objects are gathered in groups of 200 for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every polling cycle.	
+
+For instance if 10 records are fetched from origin instance, then 12 api calls will be made (1 + 10 + 1).
 
 
 # Customize It!<a name="customizeit"/>
@@ -93,7 +127,7 @@ Of course more files will be found such as Test Classes and [Mule Application Fi
 Here is a list of the main XML files you'll find in this application:
 
 * [config.xml](#configxml)
-* [inboundEndpoints.xml](#inboundendpointsxml)
+* [endpoints.xml](#endpointsxml)
 * [businessLogic.xml](#businesslogicxml)
 * [errorHandling.xml](#errorhandlingxml)
 
@@ -112,8 +146,8 @@ Functional aspect of the Anypoint Template is implemented on this XML, directed 
 3. The last step of the Process stage will group the users and create/update them in SFDC Org B.
 Finally during the On Complete stage the Anypoint Template will logoutput statistics data into the console.
 
-## inboundEndpoints.xml<a name="inboundendpointsxml"/>
-This is file is not used in this particular Anypoint Template, but you'll oftenly find flows containing the inbound endpoints to start the integration.
+## endpoints.xml<a name="endpointsxml"/>
+This is file is conformed by a Flow containing the Poll that will periodically query Sales Force for updated/created Custom Objects that meet the defined criteria in the query. And then executing the batch job process with the query results.
 
 ## errorHandling.xml<a name="errorhandlingxml"/>
 Contains a [Catch Exception Strategy](http://www.mulesoft.org/documentation/display/current/Catch+Exception+Strategy) that is only Logging the exception thrown (If so). As you imagine, this is the right place to handle how your integration will react depending on the different exceptions.
@@ -121,7 +155,7 @@ Contains a [Catch Exception Strategy](http://www.mulesoft.org/documentation/disp
 # Testing the Anypoint Template <a name="testingtheanypointtemplate"/>
 
 You will notice that the Anypoint Template has been shipped with test.
-These devidi them self into two categories:
+These devide them self into two categories:
 
 + Unit Tests
 + Integration Tests
@@ -129,7 +163,6 @@ These devidi them self into two categories:
 You can run any of them by just doing right click on the class and clicking on run as Junit test.
 
 Do bear in mind that you'll have to tell the test classes which property file to use.
-For you convinience we have added a file mule.test.properties located in "src/test/resources".
 In the run configurations of the test just make sure to add the following property:
 
 + -Dmule.env=test

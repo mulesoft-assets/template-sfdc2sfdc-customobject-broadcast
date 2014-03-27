@@ -2,14 +2,26 @@ package org.mule.templates.integration;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.mule.MessageExchangePattern;
+import org.mule.api.MuleEvent;
+import org.mule.api.MuleException;
 import org.mule.api.config.MuleProperties;
-import org.mule.construct.Flow;
+import org.mule.context.notification.NotificationException;
 import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
 import org.mule.tck.junit4.FunctionalTestCase;
+import org.mule.tck.junit4.rule.DynamicPort;
+import org.mule.tck.probe.PollingProber;
+import org.mule.tck.probe.Prober;
+import org.mule.templates.test.utils.ListenerProbe;
+import org.mule.templates.test.utils.PipelineSynchronizeListener;
+import org.mule.transport.NullPayload;
 
 /**
  * This is the base test class for Templates integration tests.
@@ -20,6 +32,17 @@ public class AbstractTemplateTestCase extends FunctionalTestCase {
 	private static final String MAPPINGS_FOLDER_PATH = "./mappings";
 	private static final String TEST_FLOWS_FOLDER_PATH = "./src/test/resources/flows/";
 	private static final String MULE_DEPLOY_PROPERTIES_PATH = "./src/main/app/mule-deploy.properties";
+
+	protected static final int TIMEOUT_SEC = 300;
+	protected static final String POLL_FLOW_NAME = "triggerFlow";
+
+	protected static final String TEMPLATE_NAME = "cutomobject-broadcast";
+
+	protected final Prober pollProber = new PollingProber(60000, 1000l);
+	protected final PipelineSynchronizeListener pipelineListener = new PipelineSynchronizeListener(POLL_FLOW_NAME);
+
+	@Rule
+	public DynamicPort port = new DynamicPort("http.port");
 
 	@Override
 	protected String getConfigResources() {
@@ -43,8 +66,11 @@ public class AbstractTemplateTestCase extends FunctionalTestCase {
 		File[] listOfFiles = testFlowsFolder.listFiles();
 		if (listOfFiles != null) {
 			for (File f : listOfFiles) {
-				if (f.isFile() && f.getName().endsWith("xml")) {
-					resources.append(",").append(TEST_FLOWS_FOLDER_PATH).append(f.getName());
+				if (f.isFile() && f.getName()
+									.endsWith("xml")) {
+					resources.append(",")
+								.append(TEST_FLOWS_FOLDER_PATH)
+								.append(f.getName());
 				}
 			}
 			return resources.toString();
@@ -65,12 +91,46 @@ public class AbstractTemplateTestCase extends FunctionalTestCase {
 		return properties;
 	}
 
-	protected Flow getFlow(String flowName) {
-		return muleContext.getRegistry().lookupObject(flowName);
+	protected void registerListeners() throws NotificationException {
+		muleContext.registerListener(pipelineListener);
 	}
 
-	protected SubflowInterceptingChainLifecycleWrapper getSubFlow(String flowName) {
-		return muleContext.getRegistry().lookupObject(flowName);
+	protected void waitForPollToRun() {
+		System.out.println("Waiting for poll to run ones...");
+		pollProber.check(new ListenerProbe(pipelineListener));
+		System.out.println("Poll flow done");
 	}
 
+	@SuppressWarnings("unchecked")
+	protected Map<String, Object> invokeRetrieveFlow(SubflowInterceptingChainLifecycleWrapper flow, Map<String, Object> payload) throws Exception {
+		MuleEvent event = flow.process(getTestEvent(payload, MessageExchangePattern.REQUEST_RESPONSE));
+		Object resultPayload = event.getMessage()
+									.getPayload();
+
+		if (resultPayload instanceof NullPayload) {
+			return null;
+		} else {
+			return (Map<String, Object>) resultPayload;
+		}
+	}
+
+	protected void deleteTestEntityFromSandBox(SubflowInterceptingChainLifecycleWrapper deleteFlow, List<Map<String, Object>> entitities) throws MuleException, Exception {
+		List<String> idList = new ArrayList<String>();
+		for (Map<String, Object> c : entitities) {
+			idList.add(c.get("Id")
+						.toString());
+		}
+		deleteFlow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
+	}
+
+	protected String buildUniqueName(String name) {
+		String timeStamp = new Long(new Date().getTime()).toString();
+
+		StringBuilder builder = new StringBuilder();
+		builder.append(name);
+		builder.append(TEMPLATE_NAME);
+		builder.append(timeStamp);
+
+		return builder.toString();
+	}
 }

@@ -14,15 +14,6 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
 	<batch:job name="syncCustomObjectsBatch">
 		<batch:threading-profile poolExhaustedAction="WAIT" />
-        <batch:input>
-            <poll doc:name="fireup Custom object synchronization">
-            <fixed-frequency-scheduler frequency="${poll.frequencyMillis}" startDelay="${poll.startDelayMillis}" />
-            <watermark variable="lastQueryDate" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-            <sfdc:query config-ref="SalesforceA"
-				doc:name="query Custom objects with filtering criteria from Salesforce Instance A"
-				query="dsql:SELECT Id, Name, interpreter__c, year__c, LastModifiedDate FROM MusicAlbum__c WHERE LastModifiedDate &gt; #[flowVars['lastQueryDate']] AND year__c &gt; 1968" />
-        </poll>
-        </batch:input>
 		<batch:process-records>
 			<batch:step name="foreachCustomObjectinAGetCustomObjectInBStep">
 				<enricher source="#[payload]" target="#[recordVars['customObjectInB']]"
@@ -61,5 +52,6 @@ payload.remove('year__c');]]></expression-component>
 			<logger level="INFO" doc:name="log 'Migration process has finished'" message="Migration process has finished: #[payload]"/>
 		</batch:on-complete>
 	</batch:job>
+    
 
 </mule>
