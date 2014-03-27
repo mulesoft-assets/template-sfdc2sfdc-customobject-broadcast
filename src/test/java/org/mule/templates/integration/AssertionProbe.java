@@ -1,4 +1,4 @@
-package org.mule.kicks.integration;
+package org.mule.templates.integration;
 
 import org.mule.tck.probe.Probe;
 

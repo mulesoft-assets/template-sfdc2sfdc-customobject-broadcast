@@ -1,8 +1,8 @@
-package org.mule.kicks.integration;
+package org.mule.templates.integration;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.mule.kicks.builders.SfdcObjectBuilder.aCustomObject;
+import static org.mule.templates.builders.SfdcObjectBuilder.aCustomObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,10 +35,10 @@ import com.mulesoft.module.batch.engine.BatchJobInstanceStore;
 import com.sforce.soap.partner.SaveResult;
 
 /**
- * The objective of this class is to validate the correct behavior of the Mule Kick that make calls to external systems.
+ * The objective of this class is to validate the correct behavior of the Template that make calls to external systems.
  * 
  */
-public class BusinessLogicTestIT extends AbstractKickTestCase {
+public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 
 	private static SubflowInterceptingChainLifecycleWrapper checkCustomObjectflow;
 	private static List<Map<String, Object>> createdCustomObjectsInA = new ArrayList<Map<String, Object>>();
@@ -245,12 +245,12 @@ public class BusinessLogicTestIT extends AbstractKickTestCase {
 	}
 
 	private String buildUniqueName(String name) {
-		String kickName = "customobjectoneway";
+		String templateName = "customobjectoneway";
 		String timeStamp = new Long(new Date().getTime()).toString();
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(name);
-		builder.append(kickName);
+		builder.append(templateName);
 		builder.append(timeStamp);
 
 		return builder.toString();

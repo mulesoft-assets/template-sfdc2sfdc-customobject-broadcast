@@ -18,9 +18,9 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
             <poll doc:name="fireup Custom object synchronization">
             <fixed-frequency-scheduler frequency="${poll.frequencyMillis}" startDelay="${poll.startDelayMillis}" />
             <watermark variable="lastQueryDate" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-            <sfdc:query-all config-ref="SalesforceA"
+            <sfdc:query config-ref="SalesforceA"
 				doc:name="query Custom objects with filtering criteria from Salesforce Instance A"
-				query="SELECT Id, Name, interpreter__c, year__c, LastModifiedDate FROM MusicAlbum__c WHERE LastModifiedDate &gt; #[flowVars['lastQueryDate']] AND year__c &gt; 1968" />
+				query="dsql:SELECT Id, Name, interpreter__c, year__c, LastModifiedDate FROM MusicAlbum__c WHERE LastModifiedDate &gt; #[flowVars['lastQueryDate']] AND year__c &gt; 1968" />
         </poll>
         </batch:input>
 		<batch:process-records>
@@ -33,7 +33,7 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
 				</enricher>
 			</batch:step>
 			<batch:step name="foreachCustomObjectinAUpsertCustomObjectsInBStep">
-				<expression-component doc:name="set ID for upsert"><![CDATA[if (recordVars['customObjectInB'] instanceof NullPayload) {
+				<expression-component doc:name="set ID for upsert"><![CDATA[if (recordVars['customObjectInB'] is NullPayload) {
 	// Remove ID as it is an insert
 	payload.remove('Id')
 } else {
