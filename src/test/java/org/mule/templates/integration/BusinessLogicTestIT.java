@@ -87,7 +87,6 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 		// than 1968 and the record exists in the target system
 		createdCustomObjectsInB.add(aCustomObject().with("Name", buildUniqueName("Physical Graffiti"))
 													.with("interpreter__c", "Lead Zep")
-													.with("genre__c", "Hard Rock")
 													.build());
 
 		createCustomObjectFlowB.process(getTestEvent(createdCustomObjectsInB, MessageExchangePattern.REQUEST_RESPONSE));
