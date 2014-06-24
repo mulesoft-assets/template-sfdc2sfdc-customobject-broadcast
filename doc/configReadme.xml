@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<configuration>
+	<placeholders>
+		<placeholder id="template_name">Salesforce to Salesforce Custom Object Broadcast</placeholder>
+	</placeholders>
+	<sections>
+		<section id="use_case">
+As a Salesforce admin I want to syncronize custom objects between two Salesfoce orgs.
+
+This Anypoint Template should serve as a foundation for setting an online sync of custom objects from one SalesForce instance to another. Everytime there is a new custom object or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the custom object on the target org.
+
+Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
+
+As implemented, this Anypoint Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
+The batch job is divided in Input, Process and On Complete stages.
+During the Input stage the Anypoint Template will go to the SalesForce Org A and query all the existing users that match the filter criteria.
+During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
+The last step of the Process stage will group the users and create/update them in SFDC Org B.
+Finally during the On Complete stage the Anypoint Template will logoutput statistics data into the console.
+		</section>
+		<section id="considerations">
+<![CDATA[
+To make this Anypoint Template run, there are certain preconditions that must be considered. All of them deal with the preparations in both source and destination systems, that must be made in order for all to run smoothly. **Failling to do so could lead to unexpected behavior of the template.**
+
+## Create the Custom Object schemas in both organizations <a name="createcustomobjects" />
+
+In order to run the Anypoint Template as is, you'll need to create the custom objects provided in your Salesforce accounts. In order to do so, [please follow the steps documented in SalesForce documentation](http://www.salesforce.com/us/developer/docs/apexcode/Content/apex_qs_customobject.htm).
+
+The custom objects and custom fields created for this application are the following:
+1. SalesForce org A
+MusicAlbum
+	interpreter
+	year
+2. SalesForce org B
+MusicAlbum
+	interpreter
+	genre
+
+**Note:** Please, take into account that this sample application uses SalesForce Object Query Language which, when querying for custom objects and fields, requires you to append `__c` to your query. So for example, to query the music albums' interptreters, the query would be this way: `SELECT interpreter__c FROM MusicAlbum__c`.
+]]>
+		</section>
+		<section id="running_on_cloudhub">
+<![CDATA[
+Once your app is all set and started, there is no need to do anything else. Every time a custom object is created or modified, it will be automatically synchronised to SFDC Org B as long as it has an Email.
+]]>
+		</section>
+		<section id="application_configuration">
+		<![CDATA[
++ http.port `9090` 
++ poll.frequencyMillis `60000`
++ poll.startDelayMillis `0`
++ watermark.defaultExpression `YESTERDAY`
+
+#### SalesForce Connector configuration for company A
++ sfdc.a.username `bob.dylan@orga`
++ sfdc.a.password `DylanPassword123`
++ sfdc.a.securityToken `avsfwCUl7apQs56Xq2AKi3X`
++ sfdc.a.url `https://login.salesforce.com/services/Soap/u/28.0`
+
+#### SalesForce Connector configuration for company B
++ sfdc.b.username `joan.baez@orgb`
++ sfdc.b.password `JoanBaez456`
++ sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
++ sfdc.b.url `https://login.salesforce.com/services/Soap/u/28.0`
+]]>
+		</section>
+		<section id="api_calls">
+		<![CDATA[
+Salesforce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. The Anypoint Template calls to the API can be calculated using the formula:
+
+***1 + X + X / 200***
+
+Being ***X*** the number of Custom Objects to be synchronized on each run. 
+
+The division by ***200*** is because, by default, Custom Objects are gathered in groups of 200 for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every polling cycle.	
+
+For instance if 10 records are fetched from origin instance, then 12 api calls will be made (1 + 10 + 1).
+]]>
+		</section>
+		<section id="default_business_logic_xml">
+		<![CDATA[
+Functional aspect of the Anypoint Template is implemented on this XML, directed by one flow that will poll for SalesForce creations/updates. The severeal message processors constitute four high level actions that fully implement the logic of this Anypoint Template:
+
+1. During the Input stage the Anypoint Template will go to the SalesForce Org A and query all the existing custom objects that match the filter criteria.
+2. During the Process stage, each SFDC custom object will be filtered depending on, if it has an existing matching custom object in the SFDC Org B.
+3. The last step of the Process stage will group the custom objects and create/update them in SFDC Org B.
+Finally during the On Complete stage the Anypoint Template will logoutput statistics data into the console.
+]]>
+		</section>
+		<section id="default_endpoints_xml">
+		<![CDATA[
+This is file is conformed by a Flow containing the Poll that will periodically query Sales Force for updated/created Custom Objects that meet the defined criteria in the query. And then executing the batch job process with the query results.
+]]>
+		</section>
+	</sections>
+</configuration>
