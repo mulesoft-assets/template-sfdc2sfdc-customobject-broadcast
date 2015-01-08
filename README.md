@@ -113,7 +113,7 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + http.port `9090` 
 + poll.frequencyMillis `60000`
 + poll.startDelayMillis `0`
-+ watermark.defaultExpression `YESTERDAY`
++ watermark.default.expression `YESTERDAY`
 
 #### SalesForce Connector configuration for company A
 + sfdc.a.username `bob.dylan@orga`
