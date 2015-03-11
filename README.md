@@ -5,6 +5,7 @@
 + [Use Case](#usecase)
 + [Considerations](#considerations)
 	* [Create the Custom Object schemas in both organizations](#createcustomobjects)
+	* [Salesforce Considerations](#salesforceconsiderations)
 + [Run it!](#runit)
 	* [Running on premise](#runonopremise)
 	* [Running on Studio](#runonstudio)
@@ -25,9 +26,9 @@ Note that using this template is subject to the conditions of this [License Agre
 Please review the terms of the license before downloading and using this template. In short, you are allowed to use the template for free with Mule ESB Enterprise Edition, CloudHub, or as a trial in Anypoint Studio.
 
 # Use Case <a name="usecase"/>
-As a Salesforce admin I want to syncronize custom objects between two Salesfoce orgs.
+As a Salesforce admin I want to synchronize custom objects between two Salesfoce orgs.
 
-This Anypoint Template should serve as a foundation for setting an online sync of custom objects from one SalesForce instance to another. Everytime there is a new custom object or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the custom object on the target org.
+This Anypoint Template should serve as a foundation for setting an online sync of custom objects from one SalesForce instance to another. When there is a new custom object or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the custom object on the target org.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
@@ -36,10 +37,9 @@ The batch job is divided in Input, Process and On Complete stages.
 During the Input stage the Anypoint Template will go to the SalesForce Org A and query all the existing users that match the filter criteria.
 During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
 The last step of the Process stage will group the users and create/update them in SFDC Org B.
-Finally during the On Complete stage the Anypoint Template will logoutput statistics data into the console.
+Finally during the On Complete stage the Anypoint Template will log output statistics data into the console.
 
 # Considerations <a name="considerations"/>
-
 
 To make this Anypoint Template run, there are certain preconditions that must be considered. All of them deal with the preparations in both source and destination systems, that must be made in order for all to run smoothly. **Failling to do so could lead to unexpected behavior of the template.**
 
@@ -59,12 +59,59 @@ MusicAlbum
 
 **Note:** Please, take into account that this sample application uses SalesForce Object Query Language which, when querying for custom objects and fields, requires you to append `__c` to your query. So for example, to query the music albums' interptreters, the query would be this way: `SELECT interpreter__c FROM MusicAlbum__c`.
 
+
+
+## Salesforce Considerations <a name="salesforceconsiderations"/>
+
+There may be a few things that you need to know regarding Salesforce, in order for this template to work.
+
+In order to have this template working as expected, you should be aware of your own Salesforce field configuration.
+
+###FAQ
+
+ - Where can I check that the field configuration for my Salesforce instance is the right one?
+
+    [Salesforce: Checking Field Accessibility for a Particular Field][1]
+
+- Can I modify the Field Access Settings? How?
+
+    [Salesforce: Modifying Field Access Settings][2]
+
+
+[1]: https://help.salesforce.com/HTViewHelpDoc?id=checking_field_accessibility_for_a_particular_field.htm&language=en_US
+[2]: https://help.salesforce.com/HTViewHelpDoc?id=modifying_field_access_settings.htm&language=en_US
+
+### As source of data
+
+If the user configured in the template for the source system does not have at least *read only* permissions for the fields that are fetched, then a *InvalidFieldFault* API fault will show up.
+
+```
+java.lang.RuntimeException: [InvalidFieldFault [ApiQueryFault [ApiFault  exceptionCode='INVALID_FIELD'
+exceptionMessage='
+Account.Phone, Account.Rating, Account.RecordTypeId, Account.ShippingCity
+^
+ERROR at Row:1:Column:486
+No such column 'RecordTypeId' on entity 'Account'. If you are attempting to use a custom field, be sure to append the '__c' after the custom field name. Please reference your WSDL or the describe call for the appropriate names.'
+]
+row='1'
+column='486'
+]
+]
+```
+
+### As destination of data
+
+There are no particular considerations for this Anypoint Template regarding Salesforce as data destination.
+
+
+
+
 # Run it! <a name="runit"/>
 Simple steps to get Salesforce to Salesforce Custom Object Broadcast running.
 
 
 ## Running on premise <a name="runonopremise"/>
-In this section we detail the way you have to run you Anypoint Temple on you computer.
+In this section we detail the way you should run your Anypoint Template on your computer.
 
 
 ### Where to Download Mule Studio and Mule ESB
@@ -96,7 +143,7 @@ Once you have imported you Anypoint Template into Anypoint Studio you need to fo
 
 
 ### Running on Mule ESB stand alone <a name="runonmuleesbstandalone"/>
-Complete all properties in one of the property files, for example in [mule.prod.properties] (../blob/master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`. 
+Complete all properties in one of the property files, for example in [mule.prod.properties] (../master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`. 
 
 
 ## Running on CloudHub <a name="runoncloudhub"/>
@@ -174,7 +221,8 @@ This is file is conformed by a Flow containing the Poll that will periodically q
 
 
 ## errorHandling.xml<a name="errorhandlingxml"/>
-Contains a [Catch Exception Strategy](http://www.mulesoft.org/documentation/display/current/Catch+Exception+Strategy) that is only Logging the exception thrown (If so). As you imagine, this is the right place to handle how your integration will react depending on the different exceptions.
+This is the right place to handle how your integration will react depending on the different exceptions. 
+This file holds a [Choice Exception Strategy](http://www.mulesoft.org/documentation/display/current/Choice+Exception+Strategy) that is referenced by the main flow in the business logic.
 
 
 
