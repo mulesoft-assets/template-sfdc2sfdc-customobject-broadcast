@@ -5,9 +5,9 @@
 	</placeholders>
 	<sections>
 		<section id="use_case">
-As a Salesforce admin I want to syncronize custom objects between two Salesfoce orgs.
+As a Salesforce admin I want to synchronize custom objects between two Salesfoce orgs.
 
-This Anypoint Template should serve as a foundation for setting an online sync of custom objects from one SalesForce instance to another. Everytime there is a new custom object or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the custom object on the target org.
+This Anypoint Template should serve as a foundation for setting an online sync of custom objects from one SalesForce instance to another. When there is a new custom object or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the custom object on the target org.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
@@ -16,7 +16,7 @@ The batch job is divided in Input, Process and On Complete stages.
 During the Input stage the Anypoint Template will go to the SalesForce Org A and query all the existing users that match the filter criteria.
 During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
 The last step of the Process stage will group the users and create/update them in SFDC Org B.
-Finally during the On Complete stage the Anypoint Template will logoutput statistics data into the console.
+Finally during the On Complete stage the Anypoint Template will log output statistics data into the console.
 		</section>
 		<section id="considerations">
 <![CDATA[
