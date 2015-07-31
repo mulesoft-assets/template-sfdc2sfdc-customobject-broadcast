@@ -53,6 +53,7 @@ public class BusinessLogicTestIT extends AbstractTemplateTestCase {
 		deleteTestDataFromSandBox();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testMainFlow() throws Exception {
 		// Run poll and wait for it to run

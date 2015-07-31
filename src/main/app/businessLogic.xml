@@ -1,46 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
 	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
 	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.0"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.7.1"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:json="http://www.mulesoft.org/schema/mule/json"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
-http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
 	<batch:job name="syncCustomObjectsBatch">
 		<batch:threading-profile poolExhaustedAction="WAIT" />
 		<batch:process-records>
-			<batch:step name="foreachCustomObjectinAGetCustomObjectInBStep">
-				<enricher source="#[payload]" target="#[recordVars['customObjectInB']]"
-					doc:name="store result in record var 'customObjectInB'">
+			<batch:step name="getCustomObjectInBStep">
+				<enricher source="#[payload == null ? null : payload['Id'] ]" target="#[payload['Id']]"
+					doc:name="store result in payload 'Id' field">
 					<sfdc:query-single config-ref="SalesforceB"
 						query="SELECT Id FROM MusicAlbum__c WHERE Name = '#[payload['Name']]'"
-						doc:name="query Custom object in Salesforce Instance B" />
+						doc:name="query customObject in Salesforce instance B" />
 				</enricher>
-			</batch:step>
-			<batch:step name="foreachCustomObjectinAUpsertCustomObjectsInBStep">
-				<expression-component doc:name="set ID for upsert"><![CDATA[if (recordVars['customObjectInB'] is NullPayload) {
-	// Remove ID as it is an insert
-	payload.remove('Id')
-} else {
-	// Add target system ID as it is an update
-    payload.put('Id', recordVars['customObjectInB']['Id'])
-}]]></expression-component>
-				<expression-component doc:name="remove unnecessary fields and map custom fields"><![CDATA[payload.remove('LastModifiedDate');
 
-// TODO - Here you should remove all custom fields that don't exist in the target system and map the ones that vary in type/format
-payload.remove('year__c');]]></expression-component>
+			</batch:step>
+			<batch:step name="createCustomObjectsInBStep"
+				accept-expression="payload != null">
+
 				<batch:commit size="200" doc:name="Batch Commit">
-					<logger message="Custom objects to update/create: #[payload]"
-						level="INFO" doc:name="log Custom objects to update/create" />
-					<sfdc:upsert config-ref="SalesforceB"
-						externalIdFieldName="Id" type="MusicAlbum__c"
-						doc:name="upsert Custom objects in Salesforce Instance B">
+                    <dw:transform-message doc:name="prepare customObjects for upsert">
+                        <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload map {
+	Id: $.Id,
+	Name: $.Name,
+	interpreter__c: $.interpreter__c
+	// TODO - Here you should remove all custom fields that don't exist in the target system and map the ones that vary in type/format
+}
+]]></dw:set-payload>
+                    </dw:transform-message>
+                    <logger message="CustomObjects for upsert = #[payload]" level="INFO" doc:name="log CustomObjects for upsert"/>
+					<sfdc:upsert config-ref="SalesforceB" type="MusicAlbum__c"
+						doc:name="upsert CustomObjects in org B" externalIdFieldName="Id">
 						<sfdc:objects ref="#[payload]" />
 					</sfdc:upsert>
 				</batch:commit>
