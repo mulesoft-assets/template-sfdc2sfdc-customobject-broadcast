@@ -26,7 +26,7 @@ Note that using this template is subject to the conditions of this [License Agre
 Please review the terms of the license before downloading and using this template. In short, you are allowed to use the template for free with Mule ESB Enterprise Edition, CloudHub, or as a trial in Anypoint Studio.
 
 # Use Case <a name="usecase"/>
-As a Salesforce admin I want to synchronize custom objects between two Salesfoce orgs.
+As a Salesforce admin I want to synchronize custom objects between two Salesforce orgs.
 
 This Anypoint Template should serve as a foundation for setting an online sync of custom objects from one SalesForce instance to another. When there is a new custom object or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the custom object on the target org.
 
@@ -161,10 +161,10 @@ Mule Studio provides you with really easy way to deploy your Template directly t
 ## Properties to be configured (With examples) <a name="propertiestobeconfigured"/>
 In order to use this Mule Anypoint Template you need to configure properties (Credentials, configurations, etc.) either in properties file or in CloudHub as Environment Variables. Detail list with examples:
 ### Application configuration
-+ http.port `9090` 
 + poll.frequencyMillis `60000`
 + poll.startDelayMillis `0`
 + watermark.default.expression `YESTERDAY`
++ page.size `200`
 
 #### SalesForce Connector configuration for company A
 + sfdc.a.username `bob.dylan@orga`

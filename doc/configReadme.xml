@@ -5,7 +5,7 @@
 	</placeholders>
 	<sections>
 		<section id="use_case">
-As a Salesforce admin I want to synchronize custom objects between two Salesfoce orgs.
+As a Salesforce admin I want to synchronize custom objects between two Salesforce orgs.
 
 This Anypoint Template should serve as a foundation for setting an online sync of custom objects from one SalesForce instance to another. When there is a new custom object or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the custom object on the target org.
 
@@ -45,11 +45,11 @@ Once your app is all set and started, there is no need to do anything else. Ever
 ]]>
 		</section>
 		<section id="application_configuration">
-		<![CDATA[
-+ http.port `9090` 
+		<![CDATA[ 
 + poll.frequencyMillis `60000`
 + poll.startDelayMillis `0`
 + watermark.default.expression `YESTERDAY`
++ page.size `200`
 
 #### SalesForce Connector configuration for company A
 + sfdc.a.username `bob.dylan@orga`
