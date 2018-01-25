@@ -1,0 +1,22 @@
+{
+  "configs": [
+    "config.xml",
+    "errorhandling.xml",
+    "businesslogic.xml",
+    "endpoints.xml"
+  ],
+  "redeploymentEnabled": true,
+  "name": "template-sfdc2sfdc-customobject-broadcast",
+  "minMuleVersion": "4.0.0",
+  "requiredProduct": "MULE_EE",
+  "classLoaderModelLoaderDescriptor": {
+    "id": "mule",
+    "attributes": {
+      "exportedResources": []
+    }
+  },
+  "bundleDescriptorLoader": {
+    "id": "mule",
+    "attributes": {}
+  }
+}

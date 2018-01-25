@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+
+	<flow name="mainFlow" doc:id="1d7ee1ae-80be-427d-900e-9a1d9dfec788">
+		<flow-ref doc:name="businesslogicFlow" doc:id="95de31bf-67b7-4a6b-9812-bc5e91d25f05"
+			name="businesslogicFlow" />
+		<error-handler>
+			<on-error-propagate enableNotifications="true"
+				logException="true" doc:name="On Error Propagate" doc:id="488b507d-e26c-4c56-8759-8bb4f6645d71"
+				type="ANY">
+				<flow-ref doc:name="errorHandlingFlow" doc:id="afdaf73c-0137-4d60-84f6-5c41234771a3"
+					name="errorHandlingFlow" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="businesslogicFlow" doc:id="dda2293a-f3aa-41b9-aa97-bfe9ccbda6c5">
+		<batch:job jobName="customobject-broadcastBatch_Job" doc:id="e9265e23-8dde-4855-8b03-b8ee709a4896">
+			<batch:process-records>
+				<batch:step name="queryCustomobjectStep" doc:id="73f5cdc7-59ae-46cb-b1b4-1b3a965e2f3e">
+					<salesforce:query-single config-ref="Salesforce_Sfdc_B_config"
+						doc:name="Query customObject from Salesforce B" doc:id="783b2ca3-1ace-4f8b-bc6d-d64b59563878"
+						target="IdInB">
+						<salesforce:salesforce-query>SELECT Id FROM MusicAlbum__c WHERE Name = ':name'
+						</salesforce:salesforce-query>
+						<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"name" : payload.Name
+}]]]></salesforce:parameters>
+					</salesforce:query-single>
+					<ee:transform doc:name="Add SFDC customObject Id to payload"
+						doc:id="c9685fd5-458b-4888-b848-0b31d4b39c38">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ vars.IdInB]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</batch:step>
+				<batch:step name="upsertInSalesforceStep" doc:id="ef1fa6ea-9b07-4385-a0b2-491396f97a34">
+					<batch:aggregator doc:name="Batch Aggregator"
+						doc:id="1df6c548-87de-4cfe-9ebb-412cab2b1499" size="200">
+						<ee:transform doc:name="Prepare customObject for Upsert"
+							doc:id="5263e05a-1baf-4e7d-befd-a210be595768">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload map ((item) -> {
+	Id: item.Id,
+	Name: item.Name,
+	interpreter__c: item.interpreter__c,
+	(Id: item.Id) if (item.Id != null)
+})]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="Log records to upsert"
+							doc:id="5647e369-d5c8-47d3-8648-3c6449046dda" message="#[write(payload, 'application/json')]" />
+						<salesforce:upsert config-ref="Salesforce_Sfdc_B_config"
+							externalIdFieldName="Id" type="MusicAlbum__c" doc:name="Upsert customObjects in Salesforce B"
+							doc:id="4a36339e-9efd-4264-a864-ddbdbc0b1732" />
+						<logger level="INFO" doc:name="Log Salesforce response"
+							doc:id="5647e369-d5c8-47d3-8648-3c6449046dda" message="#[write(payload, 'application/json')]" />
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete>
+				<logger level="INFO" doc:name="Broadcast process has finished!"
+					doc:id="b7575d38-7dbd-4602-9186-1bbb25234896" message="Broadcast process has finished!" />
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+
+	<flow name="watermarkingFlow">
+		<os:retrieve key="watermark" objectStore="watermarkStore"
+			target="lastQueryTimestamp" doc:name="Retrieve lastQueryTimestamp">
+			<os:default-value><![CDATA[${watermark.default.expression}]]></os:default-value>
+		</os:retrieve>
+		<salesforce:query config-ref="Salesforce_Sfdc_A_config"
+			doc:name="Query customObjects from Salesforce A">
+			<salesforce:salesforce-query>SELECT Name, interpreter__c, year__c, LastModifiedDate FROM MusicAlbum__c WHERE LastModifiedDate &gt; :lastModifiedDate AND year__c &gt; 1968</salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"lastModifiedDate" : vars.lastQueryTimestamp
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<os:store key="watermark" failIfPresent="false"
+			failOnNullValue="false" objectStore="watermarkStore" doc:name="Store lastQueryTimestamp">
+			<os:value>#[max(payload map $.LastModifiedDate)]</os:value>
+		</os:store>
+	</flow>
+
+
+</mule>
+
+	
+	
