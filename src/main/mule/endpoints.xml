@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="endpointsFlow" doc:id="b3e5df14-dc77-4152-8b56-af4b9bcfd583" >
+		<scheduler doc:name="Trigger sync" doc:id="9a071c1d-4a41-4239-9b11-c1b06623d3af">
+			<scheduling-strategy>
+				<fixed-frequency frequency="${scheduler.frequency}"
+					startDelay="${scheduler.startDelay}" />
+			</scheduling-strategy>
+		</scheduler>
+		<flow-ref doc:name="watermarkingFlow" doc:id="ad555f96-4c99-4012-b438-b2b3212d9005" name="watermarkingFlow"/>
+		<flow-ref doc:name="mainFlow" doc:id="8c9d58d1-53fb-45e6-b0a6-cb3d4e2d23d2" name="mainFlow"/>
+	</flow>
+</mule>
