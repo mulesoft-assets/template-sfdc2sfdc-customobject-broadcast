@@ -51,7 +51,7 @@ payload ++ vars.IdInB]]></ee:set-payload>
 				</batch:step>
 				<batch:step name="upsertInSalesforceStep" doc:id="ef1fa6ea-9b07-4385-a0b2-491396f97a34">
 					<batch:aggregator doc:name="Batch Aggregator"
-						doc:id="1df6c548-87de-4cfe-9ebb-412cab2b1499" size="200">
+						doc:id="1df6c548-87de-4cfe-9ebb-412cab2b1499" size="${page.size}">
 						<ee:transform doc:name="Prepare customObject for Upsert"
 							doc:id="5263e05a-1baf-4e7d-befd-a210be595768">
 							<ee:message>
@@ -82,27 +82,6 @@ payload map ((item) -> {
 			</batch:on-complete>
 		</batch:job>
 	</flow>
-
-	<flow name="watermarkingFlow">
-		<os:retrieve key="watermark" objectStore="watermarkStore"
-			target="lastQueryTimestamp" doc:name="Retrieve lastQueryTimestamp">
-			<os:default-value><![CDATA[${watermark.default.expression}]]></os:default-value>
-		</os:retrieve>
-		<salesforce:query config-ref="Salesforce_Sfdc_A_config"
-			doc:name="Query customObjects from Salesforce A">
-			<salesforce:salesforce-query>SELECT Name, interpreter__c, year__c, LastModifiedDate FROM MusicAlbum__c WHERE LastModifiedDate &gt; :lastModifiedDate AND year__c &gt; 1968</salesforce:salesforce-query>
-			<salesforce:parameters><![CDATA[#[output applicaton/java
----
-{
-	"lastModifiedDate" : vars.lastQueryTimestamp
-}]]]></salesforce:parameters>
-		</salesforce:query>
-		<os:store key="watermark" failIfPresent="false"
-			failOnNullValue="false" objectStore="watermarkStore" doc:name="Store lastQueryTimestamp">
-			<os:value>#[max(payload map $.LastModifiedDate)]</os:value>
-		</os:store>
-	</flow>
-
 
 </mule>
 
