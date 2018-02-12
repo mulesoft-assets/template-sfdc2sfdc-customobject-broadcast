@@ -2,8 +2,12 @@
 
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
-	<flow name="endpointsFlow" doc:id="b3e5df14-dc77-4152-8b56-af4b9bcfd583" >
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<flow name="schedulerFlow" doc:id="b3e5df14-dc77-4152-8b56-af4b9bcfd583" >
 		<scheduler doc:name="Trigger sync" doc:id="9a071c1d-4a41-4239-9b11-c1b06623d3af">
 			<scheduling-strategy>
 				<fixed-frequency frequency="${scheduler.frequency}"
@@ -12,5 +16,24 @@
 		</scheduler>
 		<flow-ref doc:name="watermarkingFlow" doc:id="ad555f96-4c99-4012-b438-b2b3212d9005" name="watermarkingFlow"/>
 		<flow-ref doc:name="mainFlow" doc:id="8c9d58d1-53fb-45e6-b0a6-cb3d4e2d23d2" name="mainFlow"/>
+	</flow>
+	<flow name="watermarkingFlow">
+		<os:retrieve key="watermark" objectStore="watermarkStore"
+			target="lastQueryTimestamp" doc:name="Retrieve lastQueryTimestamp">
+			<os:default-value><![CDATA[${watermark.default.expression}]]></os:default-value>
+		</os:retrieve>
+		<salesforce:query config-ref="Salesforce_Sfdc_A_config"
+			doc:name="Query customObjects from Salesforce A">
+			<salesforce:salesforce-query>SELECT Name, interpreter__c, year__c, LastModifiedDate FROM MusicAlbum__c WHERE LastModifiedDate &gt; :lastModifiedDate AND year__c &gt; 1968</salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"lastModifiedDate" : vars.lastQueryTimestamp
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<os:store key="watermark" failIfPresent="false"
+			failOnNullValue="false" objectStore="watermarkStore" doc:name="Store lastQueryTimestamp">
+			<os:value>#[max(payload map $.LastModifiedDate)]</os:value>
+		</os:store>
 	</flow>
 </mule>

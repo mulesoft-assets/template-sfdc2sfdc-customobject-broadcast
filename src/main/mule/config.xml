@@ -13,7 +13,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 		doc:name="Configuration properties" doc:id="77c4ebce-f817-4dff-99ad-6d2e76512d04" />
 	<configuration-properties file="mule.${mule.env}.properties"
 		doc:name="Configuration properties" doc:id="34a99db6-7c63-46ba-89f5-fa5d1fed399e" />
-	<os:object-store name="watermarkStore" persistent="true"
+	<os:object-store name="watermarkStore" persistent="false"
 		doc:name="Object store" />
 	<salesforce:sfdc-config name="Salesforce_Sfdc_A_config"
 		doc:name="Salesforce Sfdc A config" doc:id="97583da0-5499-4f2e-a610-5f6568d7e3c6">
