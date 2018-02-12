@@ -28,12 +28,12 @@ Please review the terms of the license before downloading and using this templat
 # Use Case <a name="usecase"/>
 As a Salesforce admin I want to synchronize custom objects between two Salesforce orgs.
 
-This Anypoint Template should serve as a foundation for setting an online sync of custom objects from one SalesForce instance to another. When there is a new custom object or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the custom object on the target org.
+This Anypoint Template should serve as a foundation for setting an online sync of custom objects from one SalesForce instance to another. When there is new custom object or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the custom object on the target org.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
-As implemented, this Anypoint Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
-The batch job is divided in Input, Process and On Complete stages.
+As implemented, this Anypoint Template leverages the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
+The batch job is divided in Process and On Complete stages.
 During the Input stage the Anypoint Template will go to the SalesForce Org A and query all the existing custom objects that match the filter criteria.
 During the Process stage, each SFDC custom object will be filtered depending on, if it has an existing matching custom object in the SFDC Org B.
 The last step of the Process stage will group the custom objects and create/update them in SFDC Org B.
@@ -213,7 +213,7 @@ In the visual editor they can be found on the *Global Element* tab.
 
 
 ## businessLogic.xml<a name="businesslogicxml"/>
-Functional aspect of the Anypoint Template is implemented on this XML, directed by one flow that will poll for SalesForce creations/updates. The severeal message processors constitute four high level actions that fully implement the logic of this Anypoint Template:
+Functional aspect of the Anypoint Template is implemented on this XML, directed by one flow that will poll for SalesForce creations/updates. The several message processors constitute four high level actions that fully implement the logic of this Anypoint Template:
 
 1. During the Input stage the Anypoint Template will go to the SalesForce Org A and query all the existing custom objects that match the filter criteria.
 2. During the Process stage, each SFDC custom object will be filtered depending on, if it has an existing matching custom object in the SFDC Org B.
