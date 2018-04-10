@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<munit:config name="test-suite.xml" doc:name="MUnit configuration" />
+
+	<configuration-properties doc:name="Configuration properties" doc:id="9b9106b6-d777-4f3c-8999-9a2f41365d78" file="mule.${mule.env}.properties" />
+	<configuration-properties doc:name="Configuration properties" doc:id="623d9f2d-586b-4059-99f3-d3536b123101" file="common.properties" />
+	<configuration-properties doc:name="Configuration properties" doc:id="d21ca8b5-ccfe-4a34-b750-26881b4274f7" file="mule-artifact.properties" />
+
+	<munit:before-test name="test-suitBefore_Test" description="Before tests actions" doc:id="175afc70-0474-4bb0-90a8-20029cf4ea1d">
+		<ee:transform doc:name="Set unique Names for Customobjects" doc:id="d6cffc10-809f-43b7-9bc6-c92e94fb5ca6">
+			<ee:message >
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="customObject1" ><![CDATA[%dw 2.0
+output application/java
+---
+/* Set unique name for Customobject1 */
+"testName" ++ randomInt(1000)
+]]></ee:set-variable>
+				<ee:set-variable variableName="customObject2" ><![CDATA[%dw 2.0
+output application/java
+---
+/* Set unique name for Customobject2 */
+"testName" ++ randomInt(1000)
+]]></ee:set-variable>
+				<ee:set-variable variableName="customObject3" ><![CDATA[%dw 2.0
+output application/java
+---
+/* Set unique name for Customobject3 */
+"testName" ++ randomInt(1000)
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Prepare testing data for instance A" doc:id="7c253cc1-4a09-4e71-a9c5-74e5dbbf5848">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	Name: vars.customObject1,
+	interpreter__c : "testInterpreter1",
+	year__c: 1990
+},
+{
+	Name: vars.customObject2,
+	interpreter__c : "testInterpreter2",
+	year__c: 1960
+},
+{
+	Name: vars.customObject3,
+	interpreter__c : "aTestInterpreter3",
+	year__c: 1998
+}
+]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create type="MusicAlbum__c" doc:name="Create Customobject in instance A" doc:id="8b0cbb2b-6715-42c9-83ce-6fbb32928599"
+			config-ref="Salesforce_Sfdc_A_config">
+		</salesforce:create>
+		<set-variable value="#[payload map ($.Id)]" doc:name="Store IDs to variable sfdcAIds" doc:id="623a0d4f-c873-45e6-a7ee-89bc1e194721"
+			variableName="sfdcAIds" />
+		<ee:transform doc:name="Prepare testing data for instance B" doc:id="7c253cc1-4a09-4e71-a9c5-74e5dbbf5848">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	Name: vars.customObject3,
+	interpreter__c : "bTestInterpreter3",
+	year__c: 1998
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create doc:id="8b0cbb2b-6715-42c9-83ce-6fbb32928599" doc:name="Create Customobject in instance B" config-ref="Salesforce_Sfdc_B_config"
+			type="MusicAlbum__c" />
+		<set-variable value="#[payload map ($.Id)]" doc:name="Set IDs to variable sfdcBIds" doc:id="6bd73591-80ee-469f-a71e-380da1b9cc31"
+			variableName="sfdcBIds" />
+	</munit:before-test>
+	<munit:test name="test-suite-schedulerFlowTest" description="Test" doc:id="236d8fcb-cceb-4135-921a-2f6bcf502e6c">
+		<munit:execution>
+			<scripting:execute doc:name="Sleep for 5s before we start tests" doc:id="68f96218-bb52-4fbc-92c8-1b014988e3e2" engine="groovy">
+				<scripting:code>sleep(5000)</scripting:code>
+			</scripting:execute>
+			<ee:dynamic-evaluate doc:name="Set lastQueryTimestamp" doc:id="615746d3-6940-44fa-83e5-34cc14362a01" target="lastQueryTimestamp" expression="#[p('watermark.default.expression')]"/>
+			<salesforce:query config-ref="Salesforce_Sfdc_A_config"
+			doc:name="Query customObjects from Salesforce A">
+			<salesforce:salesforce-query>SELECT Name, interpreter__c, year__c, LastModifiedDate FROM MusicAlbum__c WHERE LastModifiedDate &gt; :lastModifiedDate AND year__c &gt; 1968</salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"lastModifiedDate" : vars.lastQueryTimestamp
+}]]]></salesforce:parameters>
+		</salesforce:query>
+			<flow-ref doc:name="businesslogicFlow" doc:id="5ab4bfcb-8d3f-4c20-b8a5-cd1d1a6a9165" name="businesslogicFlow" />
+			<scripting:execute doc:name="Sleep for 30s until the processing is completed" doc:id="b09fe305-3000-4571-b824-8b555395ccb7"
+				engine="groovy">
+				<scripting:code>sleep(30000)</scripting:code>
+			</scripting:execute>
+						<salesforce:query doc:name="Query for Customobject, which shouldn't be migrated to instance B" doc:id="bfe557e1-98d0-493f-adf2-45dbe2ca140b"
+				config-ref="Salesforce_Sfdc_B_config">
+				<salesforce:salesforce-query>SELECT Id FROM MusicAlbum__c WHERE Name = ':name2'</salesforce:salesforce-query>
+				<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"name2" : vars.customObject2
+}]]]></salesforce:parameters>
+			</salesforce:query>
+			<set-variable value="#[sizeOf(payload)]" doc:name=" Set Variable for assertion" doc:id="95c89be7-1756-40fd-b198-2b1334bf6979"
+				variableName="resultSize" />
+			<munit-tools:assert-that doc:name="Assert that we didn't find Customobject" doc:id="1e559409-a86b-47b9-bb44-cbcac54c4ade"
+				expression="#[vars.resultSize]" is="#[MunitTools::equalTo(0)]" />
+			<salesforce:query doc:name="Query for Customobject, which should be migrated to instance B" doc:id="145cdbc1-3137-4eef-b8e3-7aea91cb9833"
+				config-ref="Salesforce_Sfdc_B_config">
+				<salesforce:salesforce-query>SELECT Id FROM MusicAlbum__c WHERE Name = ':name1'
+				</salesforce:salesforce-query>
+				<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"name1" : vars.customObject1
+}]]]></salesforce:parameters>
+			</salesforce:query>
+			<set-variable value="#[sizeOf(payload)]" doc:name="Set Variable with result size" doc:id="b485fb70-e4a8-4f97-9da9-e0ace1a236c9"
+				variableName="resultSize" />
+			<munit-tools:assert-that doc:name="Assert that we found migrated Customobject" doc:id="a8f4453a-10c6-4508-8ecf-64cc08e6129c"
+				expression="#[vars.resultSize]" is="#[MunitTools::equalTo(1)]" />
+			<set-variable value="#[(payload map ($.Id)) ++ vars.sfdcBIds]" doc:name="Set IDs to variable sfdcBIds" doc:id="6bd73591-80ee-469f-a71e-380da1b9cc31"
+				variableName="sfdcBIds" />
+			<salesforce:query doc:name="Query for Customobject, which should be updated in instance B" doc:id="145cdbc1-3137-4eef-b8e3-7aea91cb9833"
+				config-ref="Salesforce_Sfdc_B_config">
+				<salesforce:salesforce-query>SELECT Id, interpreter__c FROM MusicAlbum__c WHERE Name = ':name3'
+				</salesforce:salesforce-query>
+				<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"name3" : vars.customObject3
+}]]]></salesforce:parameters>
+			</salesforce:query>
+			<munit-tools:assert-that doc:name="Assert that we have updated Customobject" doc:id="3bbcc0d3-ad82-46de-8502-7c79e9408421"
+				expression="#[payload[0].interpreter__c]" is='#[MunitTools::equalTo("aTestInterpreter3")]' />
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call for upsert operation" doc:id="d169a8c9-05fa-410f-bf1f-679ac50991ea"
+				processor="salesforce:upsert" times="1" />
+			<munit-tools:verify-call doc:name="Verify call" doc:id="6615e195-e10d-4e56-8116-3ab61227a26c" processor="ee:transform"
+				atLeast="1">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute attributeName="doc:id" whereValue="c9685fd5-458b-4888-b848-0b31d4b39c38" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+	<munit:after-test name="test-suitAfter_Test" description="After tests actions" doc:id="671a6eba-9998-4f11-8c8f-6bcbe368718c">
+		<salesforce:delete doc:name="Delete testing Customobjects from A" doc:id="788956ca-8ada-49c2-a3f7-7eb367e735b4" config-ref="Salesforce_Sfdc_A_config">
+			<salesforce:delete-ids><![CDATA[#[vars.sfdcAIds]]]></salesforce:delete-ids>
+		</salesforce:delete>
+		<salesforce:delete doc:id="116d2e04-500c-4219-b9f3-c44979cc4715" doc:name="Delete testing Customobjects form B" config-ref="Salesforce_Sfdc_B_config">
+			<salesforce:delete-ids><![CDATA[#[vars.sfdcBIds]]]></salesforce:delete-ids>
+		</salesforce:delete>
+	</munit:after-test>
+
+</mule>
