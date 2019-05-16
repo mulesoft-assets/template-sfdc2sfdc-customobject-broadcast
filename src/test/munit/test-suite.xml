@@ -12,9 +12,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
 	<munit:config name="test-suite.xml" doc:name="MUnit configuration" />
 
-	<configuration-properties doc:name="Configuration properties" doc:id="9b9106b6-d777-4f3c-8999-9a2f41365d78" file="mule.${mule.env}.properties" />
-	<configuration-properties doc:name="Configuration properties" doc:id="623d9f2d-586b-4059-99f3-d3536b123101" file="common.properties" />
-	<configuration-properties doc:name="Configuration properties" doc:id="d21ca8b5-ccfe-4a34-b750-26881b4274f7" file="mule-artifact.properties" />
+	<configuration-properties doc:name="Configuration properties" doc:id="243d558c-68d5-4bd6-ab9b-348d4f7f99aa" file="mule.test.properties" />
 
 	<munit:before-test name="test-suitBefore_Test" description="Before tests actions" doc:id="175afc70-0474-4bb0-90a8-20029cf4ea1d">
 		<ee:transform doc:name="Set unique Names for Customobjects" doc:id="d6cffc10-809f-43b7-9bc6-c92e94fb5ca6">
@@ -118,7 +116,7 @@ output application/java
 			<set-variable value="#[sizeOf(payload)]" doc:name=" Set Variable for assertion" doc:id="95c89be7-1756-40fd-b198-2b1334bf6979"
 				variableName="resultSize" />
 			<munit-tools:assert-that doc:name="Assert that we didn't find Customobject" doc:id="1e559409-a86b-47b9-bb44-cbcac54c4ade"
-				expression="#[vars.resultSize]" is="#[MunitTools::equalTo(0)]" />
+				expression="#[vars.resultSize]" is="#[MunitTools::equalTo(0)]" message="Customobject is found"/>
 			<salesforce:query doc:name="Query for Customobject, which should be migrated to instance B" doc:id="145cdbc1-3137-4eef-b8e3-7aea91cb9833"
 				config-ref="Salesforce_Sfdc_B_config">
 				<salesforce:salesforce-query>SELECT Id FROM MusicAlbum__c WHERE Name = ':name1'
@@ -132,7 +130,7 @@ output application/java
 			<set-variable value="#[sizeOf(payload)]" doc:name="Set Variable with result size" doc:id="b485fb70-e4a8-4f97-9da9-e0ace1a236c9"
 				variableName="resultSize" />
 			<munit-tools:assert-that doc:name="Assert that we found migrated Customobject" doc:id="a8f4453a-10c6-4508-8ecf-64cc08e6129c"
-				expression="#[vars.resultSize]" is="#[MunitTools::equalTo(1)]" />
+				expression="#[vars.resultSize]" is="#[MunitTools::equalTo(1)]" message="Customobject was not migrated"/>
 			<set-variable value="#[(payload map ($.Id)) ++ vars.sfdcBIds]" doc:name="Set IDs to variable sfdcBIds" doc:id="6bd73591-80ee-469f-a71e-380da1b9cc31"
 				variableName="sfdcBIds" />
 			<salesforce:query doc:name="Query for Customobject, which should be updated in instance B" doc:id="145cdbc1-3137-4eef-b8e3-7aea91cb9833"
@@ -146,7 +144,7 @@ output application/java
 }]]]></salesforce:parameters>
 			</salesforce:query>
 			<munit-tools:assert-that doc:name="Assert that we have updated Customobject" doc:id="3bbcc0d3-ad82-46de-8502-7c79e9408421"
-				expression="#[payload[0].interpreter__c]" is='#[MunitTools::equalTo("aTestInterpreter3")]' />
+				expression="#[payload[0].interpreter__c]" is='#[MunitTools::equalTo("aTestInterpreter3")]' message="Customobject was not updated"/>
 		</munit:execution>
 		<munit:validation>
 			<munit-tools:verify-call doc:name="Verify call for upsert operation" doc:id="d169a8c9-05fa-410f-bf1f-679ac50991ea"
