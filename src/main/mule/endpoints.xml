@@ -20,7 +20,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 	<flow name="watermarkingFlow">
 		<os:retrieve key="watermark" objectStore="watermarkStore"
 			target="lastQueryTimestamp" doc:name="Retrieve lastQueryTimestamp">
-			<os:default-value><![CDATA[#[${watermark.default.expression}]]]></os:default-value>
+			<os:default-value ><![CDATA[#[read(p('watermark.default.expression'))]]]></os:default-value>
 		</os:retrieve>
 		<salesforce:query config-ref="Salesforce_Sfdc_A_config"
 			doc:name="Query customObjects from Salesforce A">
